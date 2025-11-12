@@ -84,8 +84,6 @@ fn main() -> Result<(), eframe::Error> {
         ..Default::default()
     };
 
-    let _ = hyprland::hyprctl::get_workspaces();
-
     eframe::run_native(
         "shunpo",
         options,
