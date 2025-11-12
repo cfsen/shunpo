@@ -44,7 +44,7 @@ impl eframe::App for Shunpo {
             // volume
             ui.horizontal(|ui| {
                 ui.label("Vol:");
-                if ui.add(egui::Slider::new(&mut self.volume, 0..=100)).changed() {
+                if ui.add(egui::Slider::new(&mut self.volume, 0..=100).orientation(egui::SliderOrientation::Vertical)).changed() {
                     let _ = system::volume::set_volume(self.volume);
                 }
             });
