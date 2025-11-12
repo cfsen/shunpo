@@ -69,8 +69,6 @@ impl eframe::App for Shunpo {
             ui.label(format!("Selected: {}", self.selected));
             ui.label("TODO: results here");
         });
-
-        ctx.request_repaint();
     }
 }
 
