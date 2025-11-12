@@ -1,10 +1,13 @@
 mod hyprland;
 mod system;
 
+use eframe;
 use eframe::egui;
 use chrono::Local;
 use anyhow::Result;
 
+#[derive(serde::Deserialize, serde::Serialize)]
+#[serde(default)]
 struct Shunpo {
     search: String,
     selected: usize,
@@ -17,6 +20,15 @@ impl Default for Shunpo {
             search: String::new(),
             selected: 0,
             volume: system::volume::get_volume().unwrap_or(0),
+        }
+    }
+}
+impl Shunpo {
+    pub fn new(cc: &eframe::CreationContext<'_>) -> Self {
+        if let Some(storage) = cc.storage {
+            eframe::get_value(storage, eframe::APP_KEY).unwrap_or_default()
+        } else {
+            Default::default()
         }
     }
 }
@@ -65,6 +77,7 @@ impl eframe::App for Shunpo {
 fn main() -> Result<(), eframe::Error> {
     let options = eframe::NativeOptions {
         viewport: egui::ViewportBuilder::default()
+            .with_app_id("shunpo")
             .with_inner_size([400.0, 300.0])
             .with_decorations(false)
             .with_transparent(true),
@@ -76,6 +89,6 @@ fn main() -> Result<(), eframe::Error> {
     eframe::run_native(
         "shunpo",
         options,
-        Box::new(|_cc| Ok(Box::<Shunpo>::default())),
+        Box::new(|cc| Ok(Box::new(Shunpo::new(cc)))),
     )
 }
