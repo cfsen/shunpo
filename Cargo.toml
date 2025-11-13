@@ -4,7 +4,6 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-eframe = "0.33"
 egui = "0.33"
 eframe = { version = "0.33.0", default-features = false, features = [
     "default_fonts", # Embed the default egui fonts.
@@ -18,3 +17,5 @@ serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 tokio = { version = "1.48", features = ["full"] }
 anyhow = "1.0"
+env_logger = "0.11.8"
+log = "0.4.28"
