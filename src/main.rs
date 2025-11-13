@@ -5,6 +5,7 @@ use eframe;
 use eframe::egui;
 use chrono::Local;
 use anyhow::Result;
+use log::{debug, info, error};
 
 #[derive(serde::Deserialize, serde::Serialize)]
 #[serde(default)]
@@ -73,6 +74,11 @@ impl eframe::App for Shunpo {
 }
 
 fn main() -> Result<(), eframe::Error> {
+    // setup logger
+    env_logger::Builder::from_env(env_logger::Env::default()
+        .default_filter_or("shunpo=debug"))
+        .init();
+    info!("Starting shunpo...");
     let options = eframe::NativeOptions {
         viewport: egui::ViewportBuilder::default()
             .with_app_id("shunpo")
