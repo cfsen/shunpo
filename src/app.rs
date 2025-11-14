@@ -1,12 +1,10 @@
 use eframe;
 use eframe::egui;
-use chrono::Local;
 use log::debug;
 use log::info;
 use tokio::sync::mpsc;
 
 use crate::state::ShunpoState;
-use crate::system;
 use crate::ui;
 
 #[derive(serde::Deserialize, serde::Serialize)]
@@ -43,14 +41,15 @@ impl eframe::App for Shunpo {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         egui::CentralPanel::default().show(ctx, |ui| {
             // clock
-            let time = Local::now().format("%H:%M:%S").to_string();
-            ui.heading(time);
+            ui::draw_clock(ui);
             ui.separator();
 
             // volume
+            ui::draw_volume_slider(ui, &mut self.state);
             ui.separator();
 
             // search
+            ui::draw_search(ui, &mut self.state);
 
             // log hyprland events
             while let Ok(event) = self.event_rx.try_recv() {

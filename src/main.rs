@@ -2,6 +2,7 @@ mod app;
 mod hyprland;
 mod state;
 mod system;
+mod ui;
 
 use eframe;
 use eframe::egui;
