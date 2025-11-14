@@ -5,15 +5,14 @@ use log::debug;
 use log::info;
 use tokio::sync::mpsc;
 
+use crate::state::ShunpoState;
 use crate::system;
 use crate::ui;
 
 #[derive(serde::Deserialize, serde::Serialize)]
 #[serde(default)]
 pub struct Shunpo {
-    search: String,
-    selected: usize,
-    volume: i32,
+    state: ShunpoState,
     #[serde(skip)]
     event_rx: mpsc::UnboundedReceiver<String>, // runtime-only, needs to be set on resume
 }
@@ -22,9 +21,7 @@ impl Default for Shunpo {
     fn default() -> Self {
         let (_tx, event_rx) = mpsc::unbounded_channel(); // dummy to satisfy the requirements for default
         Self {
-            search: String::new(),
-            selected: 0,
-            volume: system::volume::get_volume().unwrap_or(0),
+            state: ShunpoState::default(),
             event_rx
         }
     }
@@ -51,32 +48,9 @@ impl eframe::App for Shunpo {
             ui.separator();
 
             // volume
-            ui.horizontal(|ui| {
-                ui.label("Vol:");
-                if ui.add(egui::Slider::new(&mut self.volume, 0..=100).orientation(egui::SliderOrientation::Vertical)).changed() {
-                    let _ = system::volume::set_volume(self.volume);
-                }
-            });
             ui.separator();
 
             // search
-            let resp = ui.text_edit_singleline(&mut self.search);
-
-            // handle keys
-            if resp.has_focus() {
-                if ui.input(|i| i.key_pressed(egui::Key::J)) {
-                    self.selected += 1;
-                }
-                if ui.input(|i| i.key_pressed(egui::Key::K)) && self.selected > 0 {
-                    self.selected -= 1;
-                }
-                if ui.input(|i| i.key_pressed(egui::Key::Escape)) {
-                    std::process::exit(0);
-                }
-            }
-
-            ui.label(format!("Selected: {}", self.selected));
-            ui.label("TODO: results here");
 
             // log hyprland events
             while let Ok(event) = self.event_rx.try_recv() {

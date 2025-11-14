@@ -1,5 +1,6 @@
 mod app;
 mod hyprland;
+mod state;
 mod system;
 
 use eframe;
