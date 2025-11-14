@@ -43,6 +43,22 @@ pub fn dispatch(cmd: &str) -> Result<()> {
     Ok(())
 }
 
+/// Check if client is currently on a visible workspace
+pub fn is_client_visible(client_name: &str) -> bool {
+    let (Ok(monitors), Ok(clients)) = (get_monitors(), get_clients()) else {
+        return false;
+    };
+
+    let window = match clients.iter().find(|c| c.initial_title == client_name) {
+        Some(w) => w,
+        None => return false,
+    };
+
+    monitors
+        .iter()
+        .any(|m| m.active_workspace.id == window.workspace.id)
+}
+
 /// Helper for debugging, if Hyprland updates change the JSON schema
 pub fn from_json_or_panic<T: DeserializeOwned>(input: &str, context: &str) -> Result<T> {
     match serde_json::from_str::<T>(input) {
