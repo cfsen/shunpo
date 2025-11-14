@@ -1,9 +1,8 @@
 use anyhow::{Context, Result};
+use serde::de::DeserializeOwned;
 use std::process::Command;
-use tokio::io::{AsyncBufReadExt, BufReader};
-use tokio::net::UnixStream;
 
-use crate::hyprland::structs::{Workspace, Client};
+use crate::hyprland::structs::{Client, Monitor, Workspace};
 
 /// Execute a hyprctl command and return the output
 pub fn hyprctl(args: &[&str]) -> Result<String> {
@@ -23,17 +22,36 @@ pub fn hyprctl(args: &[&str]) -> Result<String> {
 /// Get all workspaces
 pub fn get_workspaces() -> Result<Vec<Workspace>> {
     let output = hyprctl(&["workspaces"])?;
-    serde_json::from_str(&output).context("Failed to parse workspaces")
+    from_json_or_panic(&output, "get_client")
 }
 
 /// Get all clients (windows)
 pub fn get_clients() -> Result<Vec<Client>> {
     let output = hyprctl(&["clients"])?;
-    serde_json::from_str(&output).context("Failed to parse clients")
+    from_json_or_panic(&output, "get_client")
+}
+
+/// Get all monitors
+pub fn get_monitors() -> Result<Vec<Monitor>> {
+    let output = hyprctl(&["monitors"])?;
+    from_json_or_panic(&output, "get_client")
 }
 
 /// Dispatch a Hyprland command
 pub fn dispatch(cmd: &str) -> Result<()> {
     hyprctl(&["dispatch", cmd])?;
     Ok(())
+}
+
+/// Helper for debugging, if Hyprland updates change the JSON schema
+pub fn from_json_or_panic<T: DeserializeOwned>(input: &str, context: &str) -> Result<T> {
+    match serde_json::from_str::<T>(input) {
+        Ok(v) => Ok(v),
+        Err(err) => panic!(
+            "Failed to parse {}:\n{}\n\n--- RAW OUTPUT BEGIN ---\n{}\n--- RAW OUTPUT END ---",
+            context,
+            err,
+            input
+        ),
+    }
 }
