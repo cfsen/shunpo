@@ -45,8 +45,12 @@ impl Shunpo {
 }
 
 impl eframe::App for Shunpo {
+    fn clear_color(&self, _visuals: &egui::Visuals) -> [f32; 4] {
+        egui::Rgba::TRANSPARENT.to_array()
+    }
+
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
-        egui::CentralPanel::default().show(ctx, |ui| {
+        main_launcher_ui(ctx, |ui| {
             // clock
             ui::draw_clock(ui);
             ui.separator();
@@ -70,6 +74,21 @@ impl eframe::App for Shunpo {
             }
         });
     }
+}
+
+fn main_launcher_ui(ctx: &egui::Context, add_contents: impl FnOnce(&mut egui::Ui)) {
+    use egui::{CentralPanel, UiBuilder};
+
+    let panel_frame = egui::Frame::new()
+        .fill(egui::Color32::from_rgba_unmultiplied(0, 0, 0, 128))
+        .corner_radius(0);
+
+    CentralPanel::default().frame(panel_frame).show(ctx, |ui| {
+        let app_rect = ui.max_rect()
+            .shrink(4.0);
+        let mut content_ui = ui.new_child(UiBuilder::new().max_rect(app_rect));
+        add_contents(&mut content_ui);
+    });
 }
 
 async fn redraw_timer(ctx: egui::Context) {
