@@ -85,7 +85,7 @@ pub struct Monitor {
     pub vrr: bool,
     pub solitary: String,
     #[serde(rename = "solitaryBlockedBy")]
-    pub solitary_blocked_by: Vec<String>,
+    pub solitary_blocked_by: Option<Vec<String>>,
     #[serde(rename = "activelyTearing")]
     pub actively_tearing: bool,
     #[serde(rename = "tearingBlockedBy")]
