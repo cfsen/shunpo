@@ -1,9 +1,12 @@
+use std::time::Duration;
+
 use eframe;
 use eframe::egui;
 use log::debug;
 use log::info;
 use tokio::sync::mpsc;
 
+use crate::hyprland::hyprctl::is_client_visible;
 use crate::state::ShunpoState;
 use crate::ui;
 
@@ -31,6 +34,10 @@ impl Shunpo {
         } else {
             Default::default()
         };
+
+        // setup redraw timer
+        let ctx = cc.egui_ctx.clone();
+        tokio::spawn(redraw_timer(ctx));
 
         app.event_rx = rx;
         app
@@ -62,5 +69,22 @@ impl eframe::App for Shunpo {
                 }
             }
         });
+    }
+}
+
+async fn redraw_timer(ctx: egui::Context) {
+    // request_repaint() must be called in order for the clock to update, when there is no user
+    // input. however, requesting redraws if the app is not being rendered (on a hidden workspace)
+    // will cause hyprland to raise an application not responding error, terminating the app.
+    // polling on a timer to check for app visibility to work around this.
+    //
+    // TODO: will still trigger ANR if another client is in fullscreen over it
+    let mut interval = tokio::time::interval(Duration::from_millis(500));
+    loop {
+        interval.tick().await;
+        if is_client_visible("shunpo"){
+            info!("request repaint");
+            ctx.request_repaint();
+        }
     }
 }
