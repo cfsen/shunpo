@@ -49,14 +49,26 @@ pub fn is_client_visible(client_name: &str) -> bool {
         return false;
     };
 
-    let window = match clients.iter().find(|c| c.initial_title == client_name) {
-        Some(w) => w,
-        None => return false,
+    // find client_name
+    let Some(cli) = clients.iter().find(|c| c.initial_title == client_name) else {
+        return false;
     };
 
-    monitors
-        .iter()
-        .any(|m| m.active_workspace.id == window.workspace.id)
+    // check if client_name's workspace is active
+    if !monitors.iter().any(|m| cli.workspace.id == m.active_workspace.id) {
+        return false;
+    }
+
+    // check for other clients in fullscreen on client_name's workspace
+    if clients.iter().any(|c|
+        c.fullscreen_client == 2 &&
+        c.initial_title != client_name &&
+        c.workspace.id == cli.workspace.id
+    ) {
+        return false;
+    };
+
+    true
 }
 
 /// Helper for debugging, if Hyprland updates change the JSON schema
