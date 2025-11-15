@@ -22,19 +22,19 @@ pub fn hyprctl(args: &[&str]) -> Result<String> {
 /// Get all workspaces
 pub fn get_workspaces() -> Result<Vec<Workspace>> {
     let output = hyprctl(&["workspaces"])?;
-    from_json_or_panic(&output, "get_client")
+    from_json_or_panic(&output, "get_workspaces")
 }
 
 /// Get all clients (windows)
 pub fn get_clients() -> Result<Vec<Client>> {
     let output = hyprctl(&["clients"])?;
-    from_json_or_panic(&output, "get_client")
+    from_json_or_panic(&output, "get_clients")
 }
 
 /// Get all monitors
 pub fn get_monitors() -> Result<Vec<Monitor>> {
     let output = hyprctl(&["monitors"])?;
-    from_json_or_panic(&output, "get_client")
+    from_json_or_panic(&output, "get_monitors")
 }
 
 /// Dispatch a Hyprland command
