@@ -2,10 +2,15 @@ use anyhow::{Context, Result};
 use tokio::io::{AsyncBufReadExt, BufReader};
 use tokio::net::UnixStream;
 use tokio::sync::mpsc::UnboundedSender;
-use log::{debug, info};
+use log::{debug, error, info};
+
+use crate::hyprland::hyprctl;
 
 /// Subscribe to Hyprland events
 pub async fn subscribe_events(tx: UnboundedSender<String>) -> Result<()> {
+    // setup initial position
+    let mut initialized = false;
+
     // get env vars
     let signature = std::env::var("HYPRLAND_INSTANCE_SIGNATURE")
         .context("HYPRLAND_INSTANCE_SIGNATURE not set")?;
@@ -24,8 +29,29 @@ pub async fn subscribe_events(tx: UnboundedSender<String>) -> Result<()> {
 
     while let Some(line) = lines.next_line().await? {
         debug!("Hyperland event: {}", line);
+        if !initialized
+        && line.len() > 16
+        && &line.as_bytes()[..10] == b"openwindow"
+        && &line.as_bytes()[&line.as_bytes().len()-6..] == b"shunpo"
+        {
+            initialized = true;
+            shunpo_initial_position();
+        }
         let _ = tx.send(line);
     }
 
     Ok(())
+}
+
+fn shunpo_initial_position(){
+    info!("Init: Shunpo to clock mode.");
+    if let Err(e) = hyprctl::toggle_floating_by_initialtitle("shunpo") {
+        error!("Failed to float window: {}", e);
+    }
+    if let Err(e) = hyprctl::resize_client_by_initialtitle("shunpo", 100, 100) {
+        error!("Failed to move window: {}", e);
+    }
+    if let Err(e) = hyprctl::move_client_by_initialtitle("shunpo", 0, 1340) {
+        error!("Failed to position window: {}", e);
+    }
 }
