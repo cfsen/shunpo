@@ -61,6 +61,16 @@ pub fn resize_client_by_initialtitle(initial_title: &str, width: u16, height: u1
     Ok(())
 }
 
+/// Move a client
+pub fn move_client_by_initialtitle(initial_title: &str, width: u16, height: u16) -> Result<()> {
+    hyprctl(&["dispatch", "movewindowpixel", "exact",
+        &width.to_string(),
+        &height.to_string(),
+        &format!(",initialtitle:{}", initial_title)]
+    )?;
+    Ok(())
+}
+
 /// Check if client is currently on a visible workspace
 pub fn is_client_visible(client_name: &str) -> bool {
     let (Ok(monitors), Ok(clients)) = (get_monitors(), get_clients()) else {
