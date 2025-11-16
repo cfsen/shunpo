@@ -43,6 +43,14 @@ pub fn dispatch(cmd: &str) -> Result<()> {
     Ok(())
 }
 
+/// Toggle floating for a client
+pub fn toggle_floating_by_initialtitle(initial_title: &str) -> Result<()> {
+    hyprctl(&["dispatch", "togglefloating",
+        &format!("initialtitle:{}", initial_title)]
+    )?;
+    Ok(())
+}
+
 /// Check if client is currently on a visible workspace
 pub fn is_client_visible(client_name: &str) -> bool {
     let (Ok(monitors), Ok(clients)) = (get_monitors(), get_clients()) else {
