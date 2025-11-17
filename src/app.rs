@@ -6,8 +6,8 @@ use log::debug;
 use tokio::sync::mpsc;
 
 use crate::hyprland::hyprctl::is_client_visible;
-use crate::ui;
 use crate::state::{ShunpoMode, ShunpoState};
+use crate::{ui,keyboard_input};
 
 #[derive(serde::Deserialize, serde::Serialize)]
 #[serde(default)]
@@ -49,6 +49,11 @@ impl eframe::App for Shunpo {
     }
 
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+        // Handle hotkeys
+        ctx.input(|i| {
+            self.state.mode = keyboard_input::handle_input(&i, self.state.mode)
+        });
+
         // TODO: move out
         // log hyprland events
         while let Ok(event) = self.event_rx.try_recv() {
