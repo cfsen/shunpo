@@ -91,6 +91,21 @@ fn main_launcher_ui(ctx: &egui::Context, add_contents: impl FnOnce(&mut egui::Ui
     });
 }
 
+fn clock_ui(ctx: &egui::Context, add_contents: impl FnOnce(&mut egui::Ui)) {
+    use egui::{CentralPanel, UiBuilder};
+
+    let panel_frame = egui::Frame::new()
+        .fill(egui::Color32::from_rgba_unmultiplied(0, 0, 0, 192))
+        .corner_radius(0);
+
+    CentralPanel::default().frame(panel_frame).show(ctx, |ui| {
+        let app_rect = ui.max_rect()
+            .shrink(4.0);
+        let mut content_ui = ui.new_child(UiBuilder::new().max_rect(app_rect));
+        add_contents(&mut content_ui);
+    });
+}
+
 async fn redraw_timer(ctx: egui::Context) {
     // request_repaint() must be called in order for the clock to update, when there is no user
     // input. however, requesting redraws if the app is not being rendered (on a hidden workspace)
