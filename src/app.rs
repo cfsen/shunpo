@@ -3,12 +3,11 @@ use std::time::Duration;
 use eframe;
 use eframe::egui;
 use log::debug;
-use log::info;
 use tokio::sync::mpsc;
 
 use crate::hyprland::hyprctl::is_client_visible;
-use crate::state::ShunpoState;
 use crate::ui;
+use crate::state::{ShunpoMode, ShunpoState};
 
 #[derive(serde::Deserialize, serde::Serialize)]
 #[serde(default)]
@@ -50,29 +49,40 @@ impl eframe::App for Shunpo {
     }
 
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
-        main_launcher_ui(ctx, |ui| {
-            // clock
-            ui::draw_clock(ui);
-            ui.separator();
-
-            // volume
-            ui::draw_volume_slider(ui, &mut self.state);
-            ui.separator();
-
-            // search
-            ui::draw_search(ui, &mut self.state);
-
-            // log hyprland events
-            while let Ok(event) = self.event_rx.try_recv() {
-                if let Some((event_type, data)) = event.split_once(">>") {
-                    match event_type {
-                        "workspace" => debug!("Workspace changed: {}", data),
-                        "activewindow" => debug!("Active window: {}", data),
-                        _ => {}
-                    }
+        // TODO: move out
+        // log hyprland events
+        while let Ok(event) = self.event_rx.try_recv() {
+            if let Some((event_type, data)) = event.split_once(">>") {
+                match event_type {
+                    "workspace" => debug!("Workspace changed: {}", data),
+                    "activewindow" => debug!("Active window: {}", data),
+                    _ => {}
                 }
             }
-        });
+        }
+
+        match self.state.mode {
+            ShunpoMode::Clock => {
+                clock_ui(ctx, |ui| {
+                    // clock
+                    ui::draw_clock(ui);
+                });
+            }
+            ShunpoMode::Launcher => {
+                main_launcher_ui(ctx, |ui| {
+                    // clock
+                    ui::draw_clock(ui);
+                    ui.separator();
+
+                    // volume
+                    ui::draw_volume_slider(ui, &mut self.state);
+                    ui.separator();
+
+                    // search
+                    ui::draw_search(ui, &mut self.state);
+                });
+            }
+        }
     }
 }
 
