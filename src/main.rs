@@ -1,5 +1,6 @@
 mod app;
 mod hyprland;
+mod keyboard_input;
 mod state;
 mod socket;
 mod system;
