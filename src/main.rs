@@ -10,7 +10,6 @@ use std::process::exit;
 
 use eframe;
 use eframe::egui;
-use chrono::Local;
 use anyhow::Result;
 use log::{info, error};
 use single_instance::SingleInstance;
