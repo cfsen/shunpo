@@ -40,6 +40,12 @@ impl Shunpo {
         let ctx = cc.egui_ctx.clone();
         tokio::spawn(redraw_timer(ctx));
 
+        // setup caret
+        cc.egui_ctx.style_mut(|style| {
+            style.visuals.text_cursor.blink = false;
+            style.visuals.text_cursor.stroke = Stroke::new(1.0, Color32::WHITE);
+        });
+
         app.event_rx = rx;
         app
     }
