@@ -8,6 +8,7 @@ use tokio::sync::mpsc;
 use crate::hyprland::hyprctl::is_client_visible;
 use crate::state::{ShunpoMode, ShunpoState};
 use crate::{ui,keyboard_input};
+use crate::keyboard_input;
 
 #[derive(serde::Deserialize, serde::Serialize)]
 #[serde(default)]
