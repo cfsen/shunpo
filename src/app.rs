@@ -2,12 +2,13 @@ use std::time::Duration;
 
 use eframe;
 use eframe::egui;
+use egui::{Color32, Stroke, Vec2};
 use log::debug;
 use tokio::sync::mpsc;
 
 use crate::hyprland::hyprctl::is_client_visible;
 use crate::state::{ShunpoMode, ShunpoState};
-use crate::{ui,keyboard_input};
+use crate::ui::{ShunpoWidgetClock, ShunpoWidgetSearch, ShunpoWidgetVolume};
 use crate::keyboard_input;
 
 #[derive(serde::Deserialize, serde::Serialize)]
@@ -70,22 +71,18 @@ impl eframe::App for Shunpo {
         match self.state.mode {
             ShunpoMode::Clock => {
                 clock_ui(ctx, |ui| {
-                    // clock
-                    ui::draw_clock(ui);
+                    ui.add(ShunpoWidgetClock::new());
                 });
             }
             ShunpoMode::Launcher => {
                 main_launcher_ui(ctx, |ui| {
-                    // clock
-                    ui::draw_clock(ui);
-                    ui.separator();
+                    ui.horizontal(|ui| {
+                        ui.add_sized(Vec2::new(100.0, 100.0), ShunpoWidgetClock::new());
+                        ui.add_sized(Vec2::new(600.0, 32.0), ShunpoWidgetSearch::new(&mut self.state));
+                        ui.add_sized(Vec2::new(50.0, 100.0), ShunpoWidgetVolume::new(&mut self.state));
+                    });
 
-                    // volume
-                    ui::draw_volume_slider(ui, &mut self.state);
-                    ui.separator();
-
-                    // search
-                    ui::draw_search(ui, &mut self.state);
+                    ui.label("placeholder search results");
                 });
             }
         }
