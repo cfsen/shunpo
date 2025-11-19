@@ -29,11 +29,12 @@ async fn main() -> Result<(), eframe::Error> {
         .init();
     info!("Starting shunpo...");
 
-    // ensure single instance and set up or notify shunpo socket
+    // shunpo socket to coordinator
     let (shunpo_tx, shunpo_rx) = mpsc::unbounded_channel::<CoordinatorMessage>();
-    let _instance = setup_shunpo_socket_or_exit(shunpo_tx);
+    // if no other instance of shunpo, set up socket. else send wakeup to running instance and exit.
+    let _instance = setup_shunpo_socket_or_exit(shunpo_tx); // must be kept in scope
 
-    // setup event listener
+    // hyprland event listener to coordinator
     let (event_tx, event_rx) = mpsc::unbounded_channel::<CoordinatorMessage>();
     tokio::spawn(async {
         if let Err(e) = hyprland::events::subscribe_events(event_tx).await {
