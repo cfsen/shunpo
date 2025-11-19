@@ -4,10 +4,11 @@ use tokio::net::UnixStream;
 use tokio::sync::mpsc::UnboundedSender;
 use log::{debug, error, info};
 
+use crate::coordinator_types::{CoordinatorMessage, HyprlandEventData};
 use crate::hyprland::hyprctl;
 
 /// Subscribe to Hyprland events
-pub async fn subscribe_events(tx: UnboundedSender<String>) -> Result<()> {
+pub async fn subscribe_events(tx: UnboundedSender<CoordinatorMessage>) -> Result<()> {
     // setup initial position
     let mut initialized = false;
 
@@ -37,7 +38,9 @@ pub async fn subscribe_events(tx: UnboundedSender<String>) -> Result<()> {
             initialized = true;
             shunpo_initial_position();
         }
-        let _ = tx.send(line);
+        let _ = tx.send(CoordinatorMessage::HyprlandEvent(HyprlandEventData {
+            raw_event: line,
+        }));
     }
 
     Ok(())

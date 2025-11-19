@@ -1,4 +1,6 @@
 mod app;
+mod coordinator;
+mod coordinator_types;
 mod hyprland;
 mod keyboard_input;
 mod state;
@@ -15,7 +17,9 @@ use log::{info, error};
 use single_instance::SingleInstance;
 use tokio::sync::mpsc;
 
-use crate::{app::Shunpo, socket::{shunpo_socket, send_wakeup}};
+use crate::{
+    app::Shunpo, coordinator::coordinator_run, coordinator_types::CoordinatorMessage, socket::{send_wakeup, shunpo_socket}
+};
 
 #[tokio::main]
 async fn main() -> Result<(), eframe::Error> {
@@ -26,15 +30,19 @@ async fn main() -> Result<(), eframe::Error> {
     info!("Starting shunpo...");
 
     // ensure single instance and set up or notify shunpo socket
-    let _instance = setup_shunpo_socket_or_exit();
+    let (shunpo_tx, shunpo_rx) = mpsc::unbounded_channel::<CoordinatorMessage>();
+    let _instance = setup_shunpo_socket_or_exit(shunpo_tx);
 
     // setup event listener
-    let (event_tx, event_rx) = mpsc::unbounded_channel();
+    let (event_tx, event_rx) = mpsc::unbounded_channel::<CoordinatorMessage>();
     tokio::spawn(async {
         if let Err(e) = hyprland::events::subscribe_events(event_tx).await {
             error!("Error in Hyprland listener: {:?}", e);
         }
     });
+
+    // setup coordinator
+    let gui_rx = coordinator_run(event_rx, shunpo_rx);
 
     // setup app
     let options = eframe::NativeOptions {
@@ -49,11 +57,11 @@ async fn main() -> Result<(), eframe::Error> {
     eframe::run_native(
         "shunpo",
         options,
-        Box::new(|cc| Ok(Box::new(Shunpo::new(cc, event_rx)))),
+        Box::new(|cc| Ok(Box::new(Shunpo::new(cc, gui_rx)))),
     )
 }
 
-fn setup_shunpo_socket_or_exit() -> SingleInstance {
+fn setup_shunpo_socket_or_exit(shunpo_tx: mpsc::UnboundedSender<CoordinatorMessage>) -> SingleInstance {
     let instance = SingleInstance::new("shunpo")
         .unwrap_or_else(|e| {
             error!("SingleInstance error: {}", e);
@@ -61,7 +69,7 @@ fn setup_shunpo_socket_or_exit() -> SingleInstance {
         });
 
     if instance.is_single() {
-        match shunpo_socket() {
+        match shunpo_socket(shunpo_tx) {
             Ok(_) => {
                 info!("Shunpo socket started.");
                 instance

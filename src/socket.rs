@@ -1,7 +1,9 @@
 use anyhow::{Context, Result};
 use log::{error, info};
 use std::{fs, io::Write, os::unix::net::UnixStream, path::Path};
-use tokio::{io::AsyncReadExt, net::UnixListener};
+use tokio::{io::AsyncReadExt, net::UnixListener, sync::mpsc::{self, UnboundedSender}};
+
+use crate::coordinator_types::{CoordinatorMessage, ShunpoSocketEventData};
 
 struct ShunpoSocketPath {
     addr: String,
@@ -22,7 +24,7 @@ fn get_shunpo_socket_path() -> Result<ShunpoSocketPath> {
     })
 }
 
-pub fn shunpo_socket() -> Result<()> {
+pub fn shunpo_socket(shunpo_tx: mpsc::UnboundedSender<CoordinatorMessage>) -> Result<()> {
     let socket = get_shunpo_socket_path()?;
 
     // setup and cleanup
@@ -35,22 +37,23 @@ pub fn shunpo_socket() -> Result<()> {
 
     // run listener
     tokio::spawn(async move {
-        socket_listener(listener).await;
+        socket_listener(listener, shunpo_tx).await;
     });
 
     Ok(())
 }
 
-async fn socket_listener(listener: UnixListener) {
+async fn socket_listener(listener: UnixListener, shunpo_tx: mpsc::UnboundedSender<CoordinatorMessage>) {
     loop {
         match listener.accept().await {
             Ok((mut stream, _)) => {
                 let mut buf = [0u8; 64];
                 match stream.read(&mut buf).await {
                     Ok(n) if n > 0 => {
+                        // TODO: message parsing
                         let msg = String::from_utf8_lossy(&buf[..n]);
                         info!("Received wakeup message: {}", msg);
-                        // TODO: wake up/focus shunpo
+                        let _ = shunpo_tx.send(CoordinatorMessage::ShunpoSocketEvent(ShunpoSocketEventData::Wake));
                     }
                     _ => {}
                 }

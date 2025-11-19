@@ -6,6 +6,7 @@ use egui::{Color32, Stroke, Vec2};
 use log::debug;
 use tokio::sync::mpsc;
 
+use crate::coordinator_types::GuiMessage;
 use crate::hyprland::hyprctl::is_client_visible;
 use crate::state::{ShunpoMode, ShunpoState};
 use crate::ui::{ShunpoWidgetClock, ShunpoWidgetSearch, ShunpoWidgetVolume};
@@ -16,7 +17,7 @@ use crate::keyboard_input;
 pub struct Shunpo {
     state: ShunpoState,
     #[serde(skip)]
-    event_rx: mpsc::UnboundedReceiver<String>, // runtime-only, needs to be set on resume
+    event_rx: mpsc::UnboundedReceiver<GuiMessage>, // runtime-only, needs to be set on resume
 }
 
 impl Default for Shunpo {
@@ -29,7 +30,7 @@ impl Default for Shunpo {
     }
 }
 impl Shunpo {
-    pub fn new(cc: &eframe::CreationContext<'_>, rx: mpsc::UnboundedReceiver<String>) -> Self {
+    pub fn new(cc: &eframe::CreationContext<'_>, rx: mpsc::UnboundedReceiver<GuiMessage>) -> Self {
         let mut app: Shunpo = if let Some(storage) = cc.storage {
             eframe::get_value(storage, eframe::APP_KEY).unwrap_or_default()
         } else {
@@ -65,12 +66,16 @@ impl eframe::App for Shunpo {
         // TODO: move out
         // log hyprland events
         while let Ok(event) = self.event_rx.try_recv() {
-            if let Some((event_type, data)) = event.split_once(">>") {
-                match event_type {
-                    "workspace" => debug!("Workspace changed: {}", data),
-                    "activewindow" => debug!("Active window: {}", data),
-                    _ => {}
-                }
+            match event {
+                GuiMessage::Wake => {
+                    info!("GUI received wake!");
+                },
+                GuiMessage::Sleep => {
+                    info!("GUI received sleep!");
+                },
+                _ => {
+                    info!("Unhandled message from coordinator.");
+                },
             }
         }
 
