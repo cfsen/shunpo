@@ -3,6 +3,7 @@ mod coordinator;
 mod coordinator_types;
 mod hyprland;
 mod keyboard_input;
+mod search;
 mod state;
 mod socket;
 mod system;
@@ -18,7 +19,11 @@ use single_instance::SingleInstance;
 use tokio::sync::mpsc;
 
 use crate::{
-    app::Shunpo, coordinator::coordinator_run, coordinator_types::CoordinatorMessage, socket::{send_wakeup, shunpo_socket}
+    app::Shunpo,
+    coordinator::coordinator_run,
+    coordinator_types::CoordinatorMessage,
+    search::listener::setup_search_listener,
+    socket::{send_wakeup, shunpo_socket},
 };
 
 #[tokio::main]
@@ -42,8 +47,15 @@ async fn main() -> Result<(), eframe::Error> {
         }
     });
 
+    // search to coordinator
+    let (search_coord_tx, search_coord_rx) = mpsc::unbounded_channel::<CoordinatorMessage>();
+    // anywhere to search
+    let (search_tx, search_rx) = mpsc::unbounded_channel::<String>();
+    // setup search
+    let _search_worker = setup_search_listener(search_rx, search_coord_tx);
+
     // setup coordinator
-    let gui_rx = coordinator_run(event_rx, shunpo_rx);
+    let gui_rx = coordinator_run(event_rx, shunpo_rx, search_coord_rx);
 
     // setup app
     let options = eframe::NativeOptions {
@@ -58,7 +70,7 @@ async fn main() -> Result<(), eframe::Error> {
     eframe::run_native(
         "shunpo",
         options,
-        Box::new(|cc| Ok(Box::new(Shunpo::new(cc, gui_rx)))),
+        Box::new(|cc| Ok(Box::new(Shunpo::new(cc, gui_rx, search_tx)))),
     )
 }
 

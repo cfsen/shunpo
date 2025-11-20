@@ -11,13 +11,14 @@ use crate::coordinator_types::{
 
 pub fn coordinator_run(
     hyprland_rx: mpsc::UnboundedReceiver<CoordinatorMessage>,
-    shunpo_rx: mpsc::UnboundedReceiver<CoordinatorMessage>
+    shunpo_rx: mpsc::UnboundedReceiver<CoordinatorMessage>,
+    search_coord_rx: mpsc::UnboundedReceiver<CoordinatorMessage>,
 ) -> mpsc::UnboundedReceiver<GuiMessage> {
 
     let (gui_tx, gui_rx) = mpsc::unbounded_channel::<GuiMessage>();
 
     tokio::spawn(async move {
-        if let Err(e) = coordinator_listener(gui_tx, hyprland_rx, shunpo_rx).await {
+        if let Err(e) = coordinator_listener(gui_tx, hyprland_rx, shunpo_rx, search_coord_rx).await {
             error!("Coordinator loop exited with error: {:?}", e);
         }
     });
@@ -28,7 +29,8 @@ pub fn coordinator_run(
 async fn coordinator_listener(
     gui_tx: mpsc::UnboundedSender<GuiMessage>,
     mut hyprland_rx: mpsc::UnboundedReceiver<CoordinatorMessage>,
-    mut shunpo_rx: mpsc::UnboundedReceiver<CoordinatorMessage>
+    mut shunpo_rx: mpsc::UnboundedReceiver<CoordinatorMessage>,
+    mut search_coord_rx: mpsc::UnboundedReceiver<CoordinatorMessage>,
 ) -> Result<(),Box<dyn std::error::Error + Send + Sync>> {
     loop {
         tokio::select! {
@@ -53,6 +55,19 @@ async fn coordinator_listener(
                             ShunpoSocketEventData::Sleep => GuiMessage::Sleep,
                         };
                         gui_tx.send(gui_cmd)?;
+                    }
+                    _ => {
+                        // TODO: log unexpected
+                    }
+                }
+            },
+
+            Some(msg) = search_coord_rx.recv() => {
+                match msg {
+                    CoordinatorMessage::SearchMessage(search) => {
+                        info!("SearchMessage:");
+                        info!("{}", search.success);
+                        info!("{:?}", search.results);
                     }
                     _ => {
                         // TODO: log unexpected

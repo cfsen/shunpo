@@ -18,19 +18,27 @@ pub struct Shunpo {
     state: ShunpoState,
     #[serde(skip)]
     event_rx: mpsc::UnboundedReceiver<GuiMessage>, // runtime-only, needs to be set on resume
+    #[serde(skip)]
+    search_tx: mpsc::UnboundedSender<String>,
 }
 
 impl Default for Shunpo {
     fn default() -> Self {
-        let (_tx, event_rx) = mpsc::unbounded_channel(); // dummy to satisfy the requirements for default
+        let (_, event_rx) = mpsc::unbounded_channel(); // dummy to satisfy the requirements for default
+        let (search_tx, _) = mpsc::unbounded_channel(); // dummy
         Self {
             state: ShunpoState::default(),
-            event_rx
+            event_rx,
+            search_tx
         }
     }
 }
 impl Shunpo {
-    pub fn new(cc: &eframe::CreationContext<'_>, rx: mpsc::UnboundedReceiver<GuiMessage>) -> Self {
+    pub fn new(
+        cc: &eframe::CreationContext<'_>,
+        rx: mpsc::UnboundedReceiver<GuiMessage>,
+        tx: mpsc::UnboundedSender<String>,
+    ) -> Self {
         let mut app: Shunpo = if let Some(storage) = cc.storage {
             eframe::get_value(storage, eframe::APP_KEY).unwrap_or_default()
         } else {
@@ -48,6 +56,7 @@ impl Shunpo {
         });
 
         app.event_rx = rx;
+        app.search_tx = tx;
         app
     }
 }
