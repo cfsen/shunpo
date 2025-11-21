@@ -32,8 +32,7 @@ async fn coordinator_listener(
     mut shunpo_rx: mpsc::UnboundedReceiver<CoordinatorMessage>,
     mut search_coord_rx: mpsc::UnboundedReceiver<CoordinatorMessage>,
 ) -> Result<(),Box<dyn std::error::Error + Send + Sync>> {
-    loop {
-        tokio::select! {
+    loop {tokio::select! {
             Some(msg) = hyprland_rx.recv() => {
                 match msg {
                     CoordinatorMessage::HyprlandEvent(event) => {
@@ -54,7 +53,7 @@ async fn coordinator_listener(
                             ShunpoSocketEventData::Wake => GuiMessage::Wake,
                             ShunpoSocketEventData::Sleep => GuiMessage::Sleep,
                         };
-                        gui_tx.send(gui_cmd)?;
+                        let _ = gui_tx.send(gui_cmd)?;
                     }
                     _ => {
                         // TODO: log unexpected
@@ -67,7 +66,8 @@ async fn coordinator_listener(
                     CoordinatorMessage::SearchMessage(search) => {
                         info!("SearchMessage:");
                         info!("{}", search.success);
-                        info!("{:?}", search.results);
+                        let gui_cmd = GuiMessage::DisplayResults(search);
+                        let _ = gui_tx.send(gui_cmd)?;
                     }
                     _ => {
                         // TODO: log unexpected
@@ -78,8 +78,7 @@ async fn coordinator_listener(
             else => {
                 info!("All input channels closed. Exiting coordinator loop.");
                 break;
-            }
-        }
-    }
+            },
+    }}
     Ok(())
 }
