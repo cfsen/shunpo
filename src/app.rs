@@ -3,19 +3,22 @@ use std::time::Duration;
 use eframe;
 use eframe::egui;
 use egui::{Color32, Stroke, Vec2};
-use log::debug;
+use log::{debug, info};
 use tokio::sync::mpsc;
 
 use crate::coordinator_types::GuiMessage;
 use crate::hyprland::hyprctl::is_client_visible;
+use crate::search::item_types::Executable;
 use crate::state::{ShunpoMode, ShunpoState};
-use crate::ui::{ShunpoWidgetClock, ShunpoWidgetSearch, ShunpoWidgetVolume};
+use crate::ui::{ShunpoWidgetClock, ShunpoWidgetSearch, ShunpoWidgetSearchResult, ShunpoWidgetVolume};
 use crate::keyboard_input;
 
 #[derive(serde::Deserialize, serde::Serialize)]
 #[serde(default)]
 pub struct Shunpo {
     state: ShunpoState,
+    #[serde(skip)]
+    search_results: Vec<(u16, Executable)>,
     #[serde(skip)]
     event_rx: mpsc::UnboundedReceiver<GuiMessage>, // runtime-only, needs to be set on resume
     #[serde(skip)]
@@ -28,6 +31,7 @@ impl Default for Shunpo {
         let (search_tx, _) = mpsc::unbounded_channel(); // dummy
         Self {
             state: ShunpoState::default(),
+            search_results: Vec::new(),
             event_rx,
             search_tx
         }
@@ -82,10 +86,17 @@ impl eframe::App for Shunpo {
                 GuiMessage::Sleep => {
                     info!("GUI received sleep!");
                 },
-                _ => {
-                    info!("Unhandled message from coordinator.");
+                GuiMessage::DisplayResults(res) => {
+                    info!("GUI received search results!");
+                    self.search_results = res.results;
                 },
             }
+        }
+
+        if self.state.send_search {
+            info!("search input changed");
+            self.state.send_search = false;
+            let _ = self.search_tx.send(self.state.search.clone());
         }
 
         match self.state.mode {
@@ -102,7 +113,9 @@ impl eframe::App for Shunpo {
                         ui.add_sized(Vec2::new(50.0, 100.0), ShunpoWidgetVolume::new(&mut self.state));
                     });
 
-                    ui.label("placeholder search results");
+                    ui.horizontal(|ui| {
+                        ui.add_sized(Vec2::new(800.0,500.0), ShunpoWidgetSearchResult::new(&self.search_results));
+                    });
                 });
             }
         }

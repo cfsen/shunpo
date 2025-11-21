@@ -7,6 +7,7 @@ use crate::system;
 pub struct ShunpoState {
     pub volume: i32,
     pub search: String,
+    pub send_search: bool,
     pub mode: ShunpoMode,
 
     pub key_shortcut_next: KeyboardShortcut,
@@ -18,6 +19,7 @@ impl Default for ShunpoState {
     fn default() -> Self {
         Self {
             search: String::new(),
+            send_search: false,
             volume: system::volume::get_volume().unwrap_or(0),
             mode: ShunpoMode::Clock,
 

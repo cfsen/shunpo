@@ -84,6 +84,10 @@ impl<'a> Widget for ShunpoWidgetSearch<'a> {
             }
         }
 
+        if resp.changed() {
+            self.state.send_search = true;
+        }
+
         if !ui.memory(|m| m.has_focus(wid)) {
             ui.memory_mut(|m| m.request_focus(wid));
         }
