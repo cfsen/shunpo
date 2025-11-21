@@ -37,15 +37,20 @@ async fn search_listener(
 
             // TODO: check search prefix for which type to search
             let mut scored = fuzzy_search::<Executable>(&items.executables, needle_view, &mut matcher);
-
             scored.sort_by_key(|(score, _)| Reverse(*score));
             scored.truncate(10);
 
-            // TODO: pass results to UI
+            let success = scored.len() > 0;
+            let results: Vec<(u16, Executable)> = scored
+                .into_iter()
+                .map(|(score,res)| (score, res.clone()))
+                .collect();
+
             info!("search listener received message");
+            // TODO: TODO_GENERIC_RESULTS
             let _ = search_coord_tx.send(CoordinatorMessage::SearchMessage(SearchMessageData{
-                success: true,
-                results: msg,
+                success,
+                results
             }));
         }
         else => {
