@@ -4,6 +4,7 @@ use chrono::Local;
 use egui::{Color32, FontFamily, FontId, Id, Response, TextEdit, Ui, Widget};
 use log::info;
 
+use crate::search::item_types::Executable;
 use crate::state::ShunpoState;
 use crate::system;
 
@@ -88,5 +89,35 @@ impl<'a> Widget for ShunpoWidgetSearch<'a> {
         }
 
         resp
+    }
+}
+
+// search result
+pub struct ShunpoWidgetSearchResult<'a> {
+    search_results: &'a Vec<(u16, Executable)>,
+}
+
+impl<'a> ShunpoWidgetSearchResult<'a> {
+    pub fn new(search_results: &'a Vec<(u16, Executable)>) -> Self {
+        Self { search_results }
+    }
+}
+
+impl<'a> Widget for ShunpoWidgetSearchResult<'a> {
+    fn ui(self, ui: &mut Ui) -> Response {
+        ui.style_mut().override_font_id = Some(egui::FontId::new(
+            24.0,
+            egui::FontFamily::Proportional,
+        ));
+
+        let resp = ui.vertical(|ui| {
+            for (_, res) in self.search_results {
+                ui.label(&res.name.to_string());
+            }
+        });
+
+        ui.style_mut().override_font_id = None;
+
+        resp.response
     }
 }
