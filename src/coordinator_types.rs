@@ -1,3 +1,5 @@
+use crate::search::item_types::Executable;
+
 //
 // coordinator inbound messages
 //
@@ -18,9 +20,12 @@ pub struct RipgrepResultData {
     success: bool,
     results: Option<Vec<String>>,
 }
+// TODO: TODO_GENERIC RESULTS
+// results should be a ready-to-dispatch type, that accepts all data sources
+// and includes flags for how the dispatcher should deal with them.
 pub struct SearchMessageData {
     pub success: bool,
-    pub results: String,
+    pub results: Vec<(u16, Executable)>, // TODO: TODO_GENERIC_RESULTS
 }
 
 //
@@ -29,6 +34,6 @@ pub struct SearchMessageData {
 pub enum GuiMessage {
     Wake,
     Sleep,
-    DisplayResults(Vec<String>),
+    DisplayResults(SearchMessageData),
 }
 
