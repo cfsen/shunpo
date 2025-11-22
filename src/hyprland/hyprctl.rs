@@ -43,6 +43,12 @@ pub fn dispatch(cmd: &str) -> Result<()> {
     Ok(())
 }
 
+/// Dispatch a terminal
+pub fn dispatch_from_term(bin: &str) -> Result<()> {
+    hyprctl(&["dispatch", "exec", &format!("$TERM_PROGRAM -e sh -c '{}'", bin)])?;
+    Ok(())
+}
+
 /// Toggle floating for a client
 pub fn toggle_floating_by_initialtitle(initial_title: &str) -> Result<()> {
     hyprctl(&["dispatch", "togglefloating",
