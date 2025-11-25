@@ -4,7 +4,7 @@ use tokio::net::UnixStream;
 use tokio::sync::mpsc::UnboundedSender;
 use log::{debug, error, info};
 
-use crate::coordinator_types::{CoordinatorMessage, HyprlandEventData};
+use crate::coordinator::types::{CoordinatorMessage, HyprlandEventData};
 use crate::hyprland::hyprctl;
 
 /// Subscribe to Hyprland events

@@ -3,7 +3,7 @@ use log::{error, info};
 use std::{fs, io::Write, os::unix::net::UnixStream, path::Path};
 use tokio::{io::AsyncReadExt, net::UnixListener, sync::mpsc::{self, UnboundedSender}};
 
-use crate::coordinator_types::{CoordinatorMessage, ShunpoSocketEventData};
+use crate::coordinator::types::{CoordinatorMessage, ShunpoSocketEventData};
 
 struct ShunpoSocketPath {
     addr: String,

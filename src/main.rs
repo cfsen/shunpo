@@ -1,6 +1,5 @@
 mod app;
 mod coordinator;
-mod coordinator_types;
 mod hyprland;
 mod keyboard_input;
 mod search;
@@ -20,8 +19,8 @@ use tokio::sync::mpsc;
 
 use crate::{
     app::Shunpo,
-    coordinator::coordinator_run,
-    coordinator_types::CoordinatorMessage,
+    coordinator::listener::coordinator_run,
+    coordinator::types::CoordinatorMessage,
     search::listener::setup_search_listener,
     socket::{send_wakeup, shunpo_socket},
 };

@@ -6,7 +6,7 @@ use egui::{Color32, Stroke, Vec2};
 use log::{debug, info};
 use tokio::sync::mpsc;
 
-use crate::coordinator_types::GuiMessage;
+use crate::coordinator::types::GuiMessage;
 use crate::hyprland::hyprctl::is_client_visible;
 use crate::search::item_types::Executable;
 use crate::state::{ShunpoMode, ShunpoState};

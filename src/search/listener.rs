@@ -5,7 +5,7 @@ use tokio::sync::mpsc;
 use nucleo::{self, Utf32String};
 
 use crate::{
-    coordinator_types::{
+    coordinator::types::{
         CoordinatorMessage,
         SearchMessageData
     },

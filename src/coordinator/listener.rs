@@ -1,7 +1,7 @@
 use log::{debug, error, info};
 use tokio::sync::mpsc;
 
-use crate::coordinator_types::{
+use crate::coordinator::types::{
     CoordinatorMessage,
     HyprlandEventData,
     ShunpoSocketEventData,
