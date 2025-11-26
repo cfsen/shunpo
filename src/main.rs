@@ -1,37 +1,38 @@
-mod app;
 mod coordinator;
 mod hyprland;
-mod keyboard_input;
 mod search;
-mod state;
 mod socket;
 mod system;
-mod ui;
+mod ui_gtk4;
 
 use std::process::exit;
 
-use eframe;
-use eframe::egui;
-use anyhow::Result;
+use gtk4::glib::ExitCode;
 use log::{info, error};
 use single_instance::SingleInstance;
 use tokio::sync::mpsc;
+use std::sync::OnceLock;
+use tokio::runtime::Runtime;
 
 use crate::{
-    app::Shunpo,
-    coordinator::listener::coordinator_run,
-    coordinator::types::CoordinatorMessage,
-    search::listener::setup_search_listener,
-    socket::{send_wakeup, shunpo_socket},
+    coordinator::{listener::coordinator_run, types::{CoordinatorMessage, GuiMessage}}, search::listener::setup_search_listener, socket::{send_wakeup, shunpo_socket},
 };
 
-#[tokio::main]
-async fn main() -> Result<(), eframe::Error> {
+
+fn runtime() -> &'static Runtime {
+    static RUNTIME: OnceLock<Runtime> = OnceLock::new();
+    RUNTIME.get_or_init(|| Runtime::new().expect("Setting up tokio runtime needs to succeed."))
+}
+
+fn main() -> ExitCode {
     // setup logger
     env_logger::Builder::from_env(env_logger::Env::default()
-        .default_filter_or("shunpo=debug"))
+        .default_filter_or("shunpo=info"))
         .init();
     info!("Starting shunpo...");
+
+    let rt = Runtime::new().expect("Failed to create Tokio runtime.");
+    let _guard = rt.enter();
 
     // shunpo socket to coordinator
     let (shunpo_tx, shunpo_rx) = mpsc::unbounded_channel::<CoordinatorMessage>();
@@ -40,7 +41,7 @@ async fn main() -> Result<(), eframe::Error> {
 
     // hyprland event listener to coordinator
     let (event_tx, event_rx) = mpsc::unbounded_channel::<CoordinatorMessage>();
-    tokio::spawn(async {
+    runtime().spawn(async move {
         if let Err(e) = hyprland::events::subscribe_events(event_tx).await {
             error!("Error in Hyprland listener: {:?}", e);
         }
@@ -53,24 +54,19 @@ async fn main() -> Result<(), eframe::Error> {
     // setup search
     let _search_worker = setup_search_listener(search_rx, search_coord_tx);
 
+    // coordinator to gui
+    let (gui_tx, gui_rx) = async_channel::unbounded::<GuiMessage>();
+    // gui to coordinator 
+    let (feedback_tx, feedback_rx) = mpsc::unbounded_channel::<CoordinatorMessage>();
+
     // setup coordinator
-    let gui_rx = coordinator_run(event_rx, shunpo_rx, search_coord_rx);
+    runtime().spawn(async move {
+        // Pass gui_tx into the coordinator so it can send messages
+        coordinator_run(event_rx, shunpo_rx, search_coord_rx, gui_tx, feedback_rx).await;
+    });
 
-    // setup app
-    let options = eframe::NativeOptions {
-        viewport: egui::ViewportBuilder::default()
-            .with_app_id("shunpo")
-            .with_inner_size([400.0, 300.0])
-            .with_decorations(false)
-            .with_transparent(true),
-        ..Default::default()
-    };
-
-    eframe::run_native(
-        "shunpo",
-        options,
-        Box::new(|cc| Ok(Box::new(Shunpo::new(cc, gui_rx, search_tx)))),
-    )
+    // run GTK on the main thread, passing the receiver
+    ui_gtk4::main_gtk4::run_shunpo(gui_rx, search_tx, feedback_tx)
 }
 
 fn setup_shunpo_socket_or_exit(shunpo_tx: mpsc::UnboundedSender<CoordinatorMessage>) -> SingleInstance {

@@ -8,6 +8,7 @@ pub enum CoordinatorMessage {
     ShunpoSocketEvent(ShunpoSocketEventData),
     RipgrepResult(RipgrepResultData),
     SearchMessage(SearchMessageData),
+    Feedback(FeedbackData),
 }
 pub struct HyprlandEventData {
     pub raw_event: String,
@@ -26,6 +27,9 @@ pub struct RipgrepResultData {
 pub struct SearchMessageData {
     pub success: bool,
     pub results: Vec<(u16, Executable)>, // TODO: TODO_GENERIC_RESULTS
+}
+pub enum FeedbackData {
+    Sleep,
 }
 
 //
