@@ -6,6 +6,8 @@ use gtk4::ApplicationWindow;
 use gtk4::Box;
 use gtk4::Entry;
 use gtk4::EventControllerKey;
+use gtk4::Label;
+use gtk4::ListBox;
 use gtk4::Orientation;
 use gtk4::glib::{self, ExitCode};
 use gtk4::prelude::*;
@@ -157,7 +159,7 @@ pub fn build_ui(
     let window_controller = window_controller();
     window.add_controller(window_controller);
 
-    let search_controller = search_controller(search.clone(), feedback_tx.clone());
+    let search_controller = search_controller(search.clone(), results.clone(), feedback_tx.clone());
     search.add_controller(search_controller);
 
     window.set_child(Some(&launcher_box));
@@ -185,8 +187,29 @@ fn window_controller() -> EventControllerKey {
     controller
 }
 
-fn search_controller(search: Entry, feedback_tx: mpsc::UnboundedSender<CoordinatorMessage>) -> EventControllerKey {
+fn search_controller(search: Entry, results: ListBox, feedback_tx: mpsc::UnboundedSender<CoordinatorMessage>) -> EventControllerKey {
     let search_controller = EventControllerKey::new();
+
+    // results navigation
+    search_controller.connect_key_pressed({
+        let results = results.clone();
+        move |_, key, _code, modifier| {
+            if modifier.contains(ModifierType::CONTROL_MASK) {
+                if key == Key::n || key == Key::p {
+                    let cur = if key == Key::n { 1 } else { -1 };
+
+                    if let Some(target_row_idx) = results.row_at_index(
+                        results.selected_row().map_or_else(|| 0, |row| row.index()+cur)
+                    ){
+                        results.select_row(Some(&target_row_idx));
+                    }
+                    return gtk4::glib::Propagation::Stop;
+                }
+            }
+            gtk4::glib::Propagation::Proceed
+        }
+    });
+
     search_controller.connect_key_released({
         move |_, key, _code, modifier| {
             if modifier.contains(ModifierType::CONTROL_MASK) && key == Key::w {
