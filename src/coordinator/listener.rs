@@ -2,9 +2,9 @@ use gtk4::glib;
 use log::{debug, error, info};
 use tokio::sync::mpsc;
 
-use crate::coordinator::types::{
+use crate::{coordinator::types::{
     CoordinatorMessage, FeedbackData, GuiMessage, HyprlandEventData, RipgrepResultData, ShunpoSocketEventData
-};
+}, hyprland::hyprctl::{dispatch, dispatch_from_term}};
 
 pub async fn coordinator_run(
     hyprland_rx: mpsc::UnboundedReceiver<CoordinatorMessage>,
@@ -109,6 +109,11 @@ async fn handle_feedback(
         CoordinatorMessage::Feedback(event) => { 
             let gui_cmd = match event {
                 FeedbackData::Sleep => { GuiMessage::Sleep },
+                FeedbackData::Run(run) => { 
+                    // TODO: handle running with/without terminal
+                    let _ = dispatch_from_term(&run);
+                    GuiMessage::Sleep
+                },
             };
 
             // TODO: error handling
