@@ -1,6 +1,7 @@
-use anyhow::{Context, Result};
+use anyhow::{anyhow, Context, Result};
+use log::{error, info};
 use serde::de::DeserializeOwned;
-use std::process::Command;
+use std::{env, process::Command};
 
 use crate::hyprland::structs::{Client, Monitor, Workspace};
 
@@ -45,8 +46,15 @@ pub fn dispatch(cmd: &str) -> Result<()> {
 
 /// Dispatch a terminal
 pub fn dispatch_from_term(bin: &str) -> Result<()> {
-    hyprctl(&["dispatch", "exec", &format!("$TERM_PROGRAM -e sh -c '{}'", bin)])?;
-    Ok(())
+    if let Ok(term) = env::var("TERM_PROGRAM") {
+        info!("Dispatching: {}", bin);
+        hyprctl(&["dispatch", "exec", &format!("{} -e sh -c '{}'", term, bin)])?;
+        Ok(())
+    }
+    else {
+        error!("Failed to fetch environment variable: TERM_PROGRAM");
+        Err(anyhow!("Failed to fetch environment variable: TERM_PROGRAM"))
+    }
 }
 
 /// Toggle floating for a client
