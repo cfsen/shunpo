@@ -32,6 +32,15 @@ async fn search_listener(
 
     loop {tokio::select! {
         Some(msg) = search_rx.recv() => {
+            // skip empty search queries
+            if msg == "" {
+                let _ = search_coord_tx.send(CoordinatorMessage::SearchMessage(SearchMessageData {
+                    success: false,
+                    results: Vec::<(u16, Executable)>::new(),
+                }));
+                continue;
+            }
+
             let needle = Utf32String::from(msg.clone());
             let needle_view = needle.slice(..);
 
