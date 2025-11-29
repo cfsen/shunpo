@@ -1,8 +1,6 @@
-use std::cmp::Reverse;
-
 use log::info;
 use tokio::sync::mpsc;
-use nucleo::{self, Utf32String};
+use nucleo;
 
 use crate::{
     coordinator::types::{
@@ -10,8 +8,9 @@ use crate::{
         SearchMessageData
     },
     search::{
-        item_types::{Executable, SearchItems},
-        matcher_helpers::fuzzy_search,
+        entity_model::FileEntity,
+        entity_repository::{EntityRepository, RepositoryConfig},
+        matcher_helpers::search_entity
     },
 };
 
@@ -27,39 +26,38 @@ async fn search_listener(
     mut search_rx: mpsc::UnboundedReceiver<String>,
     search_coord_tx: mpsc::UnboundedSender<CoordinatorMessage>
 ){
-    let items = SearchItems::new();
     let mut matcher = nucleo::Matcher::new(nucleo::Config::DEFAULT);
+
+    // TODO: populate custom paths
+    let repo_config = RepositoryConfig {
+        exec_paths: Vec::new(),
+        rg_paths: Vec::new(),
+    };
+    let mut entity_repo = EntityRepository::new(repo_config);
+    entity_repo.populate();
+    let mut haystack: &Vec<FileEntity>;
 
     loop {tokio::select! {
         Some(msg) = search_rx.recv() => {
             // skip empty search queries
-            if msg == "" {
+            if msg.is_empty() {
                 let _ = search_coord_tx.send(CoordinatorMessage::SearchMessage(SearchMessageData {
                     success: false,
-                    results: Vec::<(u16, Executable)>::new(),
+                    results: Vec::new(),
                 }));
                 continue;
             }
+            // else if msg.starts_with("rg ") {
+            //     haystack = entity_repo.get_generic_documents();
+            // }
+            else {
+                haystack = entity_repo.get_generic_executables();
+            }
 
-            let needle = Utf32String::from(msg.clone());
-            let needle_view = needle.slice(..);
-
-            // TODO: check search prefix for which type to search
-            let mut scored = fuzzy_search::<Executable>(&items.executables, needle_view, &mut matcher);
-            scored.sort_by_key(|(score, _)| Reverse(*score));
-            scored.truncate(10);
-
-            let success = scored.len() > 0;
-            let results: Vec<(u16, Executable)> = scored
-                .into_iter()
-                .map(|(score,res)| (score, res.clone()))
-                .collect();
-
-            info!("search listener received message");
-            // TODO: TODO_GENERIC_RESULTS
-            let _ = search_coord_tx.send(CoordinatorMessage::SearchMessage(SearchMessageData{
-                success,
-                results
+            let results = search_entity(&haystack, msg, &mut matcher);
+            let _ = search_coord_tx.send(CoordinatorMessage::SearchMessage(SearchMessageData {
+                success: true,
+                results,
             }));
         }
         else => {

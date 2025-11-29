@@ -1,5 +1,7 @@
 use gtk4::{ApplicationWindow, Entry, Label, ListBox, Scale, ScrolledWindow};
 
+use crate::search::entity_model::LauncherEntity;
+
 pub struct ShunpoWidgets {
     pub window: ApplicationWindow,
     pub clock: Label,
@@ -12,6 +14,7 @@ pub struct ShunpoWidgets {
 
 pub struct ShunpoState {
     pub ui_mode: UIMode,
+    pub results_data: Vec<LauncherEntity>,
 }
 impl ShunpoState {
     pub fn new() -> Self {

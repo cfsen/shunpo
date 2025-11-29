@@ -27,15 +27,18 @@ pub fn handle_ui_message(msg: GuiMessage, widgets: &ShunpoWidgets, state: &mut S
                 widgets.results.remove(&child);
             }
 
+            // update state
+            state.results_data = data.results.clone();
+
             // populate new results
-            for (_score, exe) in data.results {
+            for entity  in data.results {
                 let row = ListBoxRow::new();
                 let box_ = Box::new(Orientation::Horizontal, 10);
                 box_.set_margin_top(5);
                 box_.set_margin_bottom(5);
                 box_.set_margin_start(10);
 
-                let label = Label::new(Some(&exe.name.to_string()));
+                let label = Label::new(Some(&entity.alias.to_string()));
                 box_.append(&label);
 
                 row.set_child(Some(&box_));
