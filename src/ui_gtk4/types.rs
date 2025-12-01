@@ -20,6 +20,7 @@ impl ShunpoState {
     pub fn new() -> Self {
         Self {
             ui_mode: UIMode::Clock,
+            results_data: Vec::new(),
         }
     }
 }

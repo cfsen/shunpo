@@ -23,6 +23,7 @@ use tokio::sync::mpsc;
 use crate::coordinator::types::CoordinatorMessage;
 use crate::coordinator::types::FeedbackData;
 use crate::coordinator::types::GuiMessage;
+use crate::search::entity_model::LauncherEntity;
 use crate::ui_gtk4::message_handler::handle_ui_message;
 use crate::ui_gtk4::types::ShunpoState;
 use crate::ui_gtk4::types::ShunpoWidgets;
@@ -48,7 +49,7 @@ pub fn run_shunpo(
         if let Some(rx) = gui_rx.borrow_mut().take() {
 
             let feedback = feedback_tx.clone();
-            let widgets = build_ui(app, feedback);
+            let widgets = build_ui(app, feedback, state_rc.clone());
 
             // initial setup
             let state = state_rc.borrow_mut();
@@ -67,9 +68,11 @@ pub fn run_shunpo(
             let state_update = state_rc.clone();
             glib::spawn_future_local(async move {
                 while let Ok(msg) = rx.recv().await {
-                    let mut state = state_update.borrow_mut();
-                    handle_ui_message(msg, &widgets, &mut state);
-                    update_ui(&widgets, &state); // update ui
+                    {
+                        let mut state = state_update.borrow_mut();
+                        handle_ui_message(msg, &widgets, &mut state);
+                        update_ui(&widgets, &state); // update ui
+                    }
                 }
             });
         } else {
@@ -115,7 +118,8 @@ fn toggle_ui_mode(widgets: &ShunpoWidgets, state: &ShunpoState) {
 
 pub fn build_ui(
     app: &Application,
-    feedback_tx: mpsc::UnboundedSender<CoordinatorMessage>
+    feedback_tx: mpsc::UnboundedSender<CoordinatorMessage>,
+    state: Rc<RefCell<ShunpoState>>,
 ) -> ShunpoWidgets {
     let window = ApplicationWindow::builder()
         .application(app)
@@ -159,7 +163,12 @@ pub fn build_ui(
     let window_controller = window_controller();
     window.add_controller(window_controller);
 
-    let search_controller = search_controller(search.clone(), results.clone(), feedback_tx.clone());
+    let search_controller = search_controller(
+        search.clone(),
+        results.clone(),
+        feedback_tx.clone(),
+        state,
+    );
     search.add_controller(search_controller);
 
     window.set_child(Some(&launcher_box));
@@ -187,7 +196,12 @@ fn window_controller() -> EventControllerKey {
     controller
 }
 
-fn search_controller(search: Entry, results: ListBox, feedback_tx: mpsc::UnboundedSender<CoordinatorMessage>) -> EventControllerKey {
+fn search_controller(
+    search: Entry,
+    results: ListBox,
+    feedback_tx: mpsc::UnboundedSender<CoordinatorMessage>,
+    state_rc: Rc<RefCell<ShunpoState>>,
+) -> EventControllerKey {
     let search_controller = EventControllerKey::new();
 
     // results navigation
@@ -216,19 +230,44 @@ fn search_controller(search: Entry, results: ListBox, feedback_tx: mpsc::Unbound
                 // TODO: remove until first left whitespace
                 search.set_text("");
             }
-            if key == Key::Return {
-                let text = search.text();
-                if text.is_empty() {
-                    info!("Empty return");
-                    let _ = feedback_tx.send(CoordinatorMessage::Feedback(FeedbackData::Sleep));
-                } else if text == ":q" {
-                    std::process::exit(0);
-                } else {
-                    info!("Launch currently selected, search term: {}", text);
-                }
+
+            if key != Key::Return {
+                return;
+            }
+
+            let text = search.text();
+
+            if text.is_empty() {
+                let _ = feedback_tx.send(CoordinatorMessage::Feedback(
+                    FeedbackData::Sleep
+                ));
+                return;
+            }
+            else if text == ":q" {
+                std::process::exit(0);
+            }
+
+            let res: Option<LauncherEntity>;
+            {
+                let state = state_rc.borrow();
+                res = result_data_from_idx(&results, &state);
+            }
+            if let Some(data) = res {
+                let _ = feedback_tx.send(CoordinatorMessage::Feedback(
+                    FeedbackData::Run(data.command)
+                ));
+            }
+            else {
+                error!("Failed to match listbox to state!");
             }
         }
     });
 
     search_controller
+}
+
+fn result_data_from_idx(results: &ListBox, state: &ShunpoState) -> Option<LauncherEntity> {
+    results.selected_row()
+        .and_then(|r| { state.results_data.get(r.index() as usize) })
+        .map(|entity| entity.clone())
 }
