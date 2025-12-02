@@ -65,6 +65,17 @@ fn main() -> ExitCode {
         coordinator_run(event_rx, shunpo_rx, search_coord_rx, gui_tx, feedback_rx).await;
     });
 
+    // setup renderer
+    // NOTE: UNSAFE
+    // prevent loading heavy nvidia/vulkan libraries by modifying global process environment.
+    // this setting is removed when applications are launched.
+    unsafe {
+
+        // TODO: TODO_PRESERVE_ENV
+        // capture value of GSK_RENDERER (if any) and set it back when launching apps
+        std::env::set_var("GSK_RENDERER", "cairo");
+    }
+
     // run GTK on the main thread, passing the receiver
     ui_gtk4::main_gtk4::run_shunpo(gui_rx, search_tx, feedback_tx)
 }

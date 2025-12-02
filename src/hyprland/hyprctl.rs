@@ -8,6 +8,7 @@ use crate::hyprland::structs::{Client, Monitor, Workspace};
 /// Execute a hyprctl command and return the output
 pub fn hyprctl(args: &[&str]) -> Result<String> {
     let output = Command::new("hyprctl")
+        .env_remove("GSK_RENDERER") // TODO: TODO_PRESERVE_ENV
         .args(args)
         .arg("-j") // JSON output
         .output()
