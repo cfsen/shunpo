@@ -41,7 +41,7 @@ pub fn get_monitors() -> Result<Vec<Monitor>> {
 
 /// Dispatch a Hyprland command
 pub fn dispatch(cmd: &str) -> Result<()> {
-    hyprctl(&["dispatch", cmd])?;
+    hyprctl(&["dispatch", "exec", cmd])?;
     Ok(())
 }
 
