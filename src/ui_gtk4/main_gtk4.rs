@@ -254,7 +254,7 @@ fn search_controller(
             }
             if let Some(data) = res {
                 let _ = feedback_tx.send(CoordinatorMessage::Feedback(
-                    FeedbackData::Run(data.command)
+                    FeedbackData::Run(data)
                 ));
             }
             else {

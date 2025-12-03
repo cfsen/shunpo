@@ -27,7 +27,7 @@ pub struct SearchMessageData {
 }
 pub enum FeedbackData {
     Sleep,
-    Run(String),
+    Run(LauncherEntity),
 }
 
 //

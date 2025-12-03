@@ -1,10 +1,11 @@
+use anyhow::{anyhow, Context, Result};
 use gtk4::glib;
-use log::{debug, error, info};
+use log::{debug, error, info, warn};
 use tokio::sync::mpsc;
 
 use crate::{coordinator::{error::CoordinatorError, types::{
     CoordinatorMessage, FeedbackData, GuiMessage, HyprlandEventData, RipgrepResultData, SearchMessageData, ShunpoSocketEventData
-}}, hyprland::hyprctl::{dispatch, dispatch_from_term}};
+}}, hyprland::hyprctl::{dispatch, dispatch_from_term}, search::entity_model::Dispatcher};
 
 pub async fn coordinator_run(
     hyprland_rx: mpsc::UnboundedReceiver<CoordinatorMessage>,
@@ -94,12 +95,28 @@ async fn handle_feedback(
     let gui_cmd = match msg {
         FeedbackData::Sleep => { GuiMessage::Sleep },
         FeedbackData::Run(run) => {
-            // TODO: handle running with/without terminal
 
-            if let Err(dispatch_err) = dispatch_from_term(&run) {
-                return Err(CoordinatorError::FeedbackError(
-                    format!("Hyprland terminal dispatcher: {}", dispatch_err)
-                ));
+            // TODO: proper arg parsing
+            // ignoring launch args for now
+            let cmd = run.command
+                .trim_end_matches("%u")
+                .trim_end_matches("%U")
+                .trim().to_string();
+
+            let dispatch = match run.dispatcher {
+                Dispatcher::Shell => { dispatch_from_term(&cmd) },
+                Dispatcher::Hyprctl => { dispatch(&cmd) },
+                _ => {
+                    Err(anyhow!("Custom dispatchers not implemented."))
+                },
+            };
+            match dispatch {
+                Ok(_) => {
+                    info!("Dispatched: {}", &cmd);
+                },
+                Err(e) => {
+                    error!("Dispatch error: {}", e);
+                },
             }
 
             // TODO: focus opened window (coordinate with hyprland event listener)
