@@ -32,9 +32,13 @@ pub struct LauncherEntity {
 }
 impl LauncherEntity {
     pub fn from_executable(entity: &ExecutableEntity) -> Self {
+        let command = match entity.source {
+            ExecutableSource::DesktopFile => { entity.exec.clone() },
+            _  => { entity.path.to_string_lossy().to_string() },
+        };
         LauncherEntity {
             alias: entity.ui_name.clone(),
-            command: entity.exec.clone(),
+            command,
             dispatcher: entity.dispatcher.clone(),
         }
     }
