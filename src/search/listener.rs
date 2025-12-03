@@ -39,6 +39,7 @@ async fn search_listener(
 
     loop {tokio::select! {
         Some(msg) = search_rx.recv() => {
+            let results;
             // skip empty search queries
             if msg.is_empty() {
                 let _ = search_coord_tx.send(CoordinatorMessage::SearchMessage(SearchMessageData {
@@ -51,10 +52,15 @@ async fn search_listener(
             //     haystack = entity_repo.get_generic_documents();
             // }
             else {
+            else if msg.starts_with("b ") {
                 haystack = entity_repo.get_generic_executables();
+                results = search_entity(&haystack, msg[2..].to_string(), &mut matcher);
+            }
+            else {
+                haystack = entity_repo.get_generic_exec_desktop();
+                results = search_entity(&haystack, msg, &mut matcher);
             }
 
-            let results = search_entity(&haystack, msg, &mut matcher);
             let _ = search_coord_tx.send(CoordinatorMessage::SearchMessage(SearchMessageData {
                 success: true,
                 results,
