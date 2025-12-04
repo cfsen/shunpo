@@ -41,7 +41,7 @@ async fn search_listener(
         Some(msg) = search_rx.recv() => {
             let results;
             // skip empty search queries
-            if msg.is_empty() {
+            if msg.is_empty() || msg.starts_with(":") {
                 let _ = search_coord_tx.send(CoordinatorMessage::SearchMessage(SearchMessageData {
                     success: false,
                     results: Vec::new(),
