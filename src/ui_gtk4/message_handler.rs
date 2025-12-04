@@ -3,7 +3,7 @@ use gtk4::{
     Label, Box, Orientation, 
     ListBoxRow
 };
-use gtk4_layer_shell::{KeyboardMode, LayerShell};
+use gtk4_layer_shell::{KeyboardMode, Layer, LayerShell};
 use log::info;
 
 use crate::coordinator::types::GuiMessage;
@@ -11,14 +11,22 @@ use crate::ui_gtk4::types::{ShunpoState, ShunpoWidgets, UIMode};
 
 pub fn handle_ui_message(msg: GuiMessage, widgets: &ShunpoWidgets, state: &mut ShunpoState) {
     match msg {
+        GuiMessage::DeepSleep => {
+            info!("Sleep message received by UI event handler.");
+            state.ui_mode = UIMode::Clock;
+            widgets.window.set_layer(Layer::Bottom);
+            widgets.window.set_keyboard_mode(KeyboardMode::None);
+        }
         GuiMessage::Sleep => {
             info!("Sleep message received by UI event handler.");
             state.ui_mode = UIMode::Clock;
+            widgets.window.set_layer(Layer::Overlay);
             widgets.window.set_keyboard_mode(KeyboardMode::None); // reject keyboard input
         },
         GuiMessage::Wake => {
             info!("Wake message received by UI event handler.");
             state.ui_mode = UIMode::Launcher;
+            widgets.window.set_layer(Layer::Overlay);
             widgets.window.set_keyboard_mode(KeyboardMode::Exclusive); // grab focus
             widgets.search.grab_focus();
             widgets.search.set_text(""); // clear previous search

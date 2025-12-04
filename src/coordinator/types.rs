@@ -36,6 +36,7 @@ pub enum FeedbackData {
 pub enum GuiMessage {
     Wake,
     Sleep,
+    DeepSleep,
     DisplayResults(SearchMessageData),
 }
 
