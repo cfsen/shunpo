@@ -26,6 +26,7 @@ pub struct SearchMessageData {
     pub results: Vec<LauncherEntity>,
 }
 pub enum FeedbackData {
+    DeepSleep,
     Sleep,
     Run(LauncherEntity),
 }

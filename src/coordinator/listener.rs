@@ -94,6 +94,7 @@ async fn handle_feedback(
 ) -> Result<(), CoordinatorError> {
     let gui_cmd = match msg {
         FeedbackData::Sleep => { GuiMessage::Sleep },
+        FeedbackData::DeepSleep => { GuiMessage::DeepSleep },
         FeedbackData::Run(run) => {
 
             // TODO: proper arg parsing

@@ -92,6 +92,12 @@ pub fn search_controller(
             else if text == ":q" {
                 std::process::exit(0);
             }
+            else if text == ":deepsleep" {
+                let _ = feedback_tx.send(CoordinatorMessage::Feedback(
+                    FeedbackData::DeepSleep
+                ));
+                return;
+            }
 
             let res: Option<LauncherEntity>;
             {
