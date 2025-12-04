@@ -50,6 +50,7 @@ pub fn build_ui(
 
     // shell layer
     window.init_layer_shell();
+    window.set_namespace(Some("shunpo"));
     window.set_layer(Layer::Overlay);
     window.set_keyboard_mode(gtk4_layer_shell::KeyboardMode::OnDemand);
 
