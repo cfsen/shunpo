@@ -1,8 +1,21 @@
 use serde::{Deserialize, Serialize};
 
+#[derive(Debug, Serialize, Deserialize, Clone, Hash, Eq, PartialEq)]
+#[serde(transparent)]
+pub struct MonitorId(i32);
+impl From<i32> for MonitorId {
+    fn from(untyped_id: i32) -> Self { Self(untyped_id) }
+}
+#[derive(Debug, Serialize, Deserialize, Clone, Hash, Eq, PartialEq)]
+#[serde(transparent)]
+pub struct WorkspaceId(i32);
+impl From<i32> for WorkspaceId {
+    fn from(untyped_id: i32) -> Self { Self(untyped_id) }
+}
+
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Workspace {
-    pub id: i32,
+    pub id: WorkspaceId,
     pub name: String,
     pub monitor: String,
     #[serde(rename = "monitorID")]
@@ -56,7 +69,7 @@ pub struct Client {
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Monitor {
-    pub id: i32,
+    pub id: MonitorId,
     pub name: String,
     pub description: String,
     pub make: String,
