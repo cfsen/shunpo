@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize, Clone, Hash, Eq, PartialEq)]
@@ -114,6 +116,40 @@ pub struct Monitor {
     pub mirror_of: String,
     #[serde(rename = "availableModes")]
     pub available_modes: Vec<String>,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct Layers {
+    #[serde(flatten)]
+    pub monitors: HashMap<String, MonitorLayers>, // monitor name
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct MonitorLayers {
+    pub levels: Levels,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct Levels {
+    #[serde(rename = "0")]
+    pub background: Vec<Layer>,
+    #[serde(rename = "1")]
+    pub bottom: Vec<Layer>,
+    #[serde(rename = "2")]
+    pub top: Vec<Layer>,
+    #[serde(rename = "3")]
+    pub overlay: Vec<Layer>,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct Layer {
+    pub address: String,
+    pub x: i16,
+    pub y: i16,
+    pub w: i16,
+    pub h: i16,
+    pub namespace: String,
+    pub pid: i32,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
