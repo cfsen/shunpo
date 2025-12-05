@@ -51,7 +51,6 @@ async fn search_listener(
             // else if msg.starts_with("rg ") {
             //     haystack = entity_repo.get_generic_documents();
             // }
-            else {
             else if msg.starts_with("b ") {
                 haystack = entity_repo.get_generic_executables();
                 results = search_entity(&haystack, msg[2..].to_string(), &mut matcher);
