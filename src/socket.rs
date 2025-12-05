@@ -52,8 +52,10 @@ async fn socket_listener(listener: UnixListener, shunpo_tx: mpsc::UnboundedSende
                     Ok(n) if n > 0 => {
                         // TODO: message parsing
                         let msg = String::from_utf8_lossy(&buf[..n]);
-                        info!("Received wakeup message: {}", msg);
-                        let _ = shunpo_tx.send(CoordinatorMessage::ShunpoSocketEvent(ShunpoSocketEventData::Wake));
+                        info!("Received socket message: {}", msg);
+                        let _ = shunpo_tx.send(
+                            CoordinatorMessage::ShunpoSocketEvent(ShunpoSocketEventData::ToggleUiMode)
+                        );
                     }
                     _ => {}
                 }

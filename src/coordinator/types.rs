@@ -14,8 +14,7 @@ pub struct HyprlandEventData {
     pub raw_event: String,
 }
 pub enum ShunpoSocketEventData {
-    Wake,
-    Sleep,
+    ToggleUiMode,
 }
 pub struct RipgrepResultData {
     success: bool,
