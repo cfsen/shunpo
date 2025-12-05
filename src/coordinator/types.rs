@@ -26,8 +26,7 @@ pub struct SearchMessageData {
     pub results: Vec<LauncherEntity>,
 }
 pub enum FeedbackData {
-    DeepSleep,
-    Sleep,
+    GuiMessagePassthrough(GuiMessage),
     Run(LauncherEntity),
 }
 
@@ -35,6 +34,7 @@ pub enum FeedbackData {
 // coordinator outbound messages
 //
 pub enum GuiMessage {
+    ToggleUiMode,
     Wake,
     Sleep,
     DeepSleep,

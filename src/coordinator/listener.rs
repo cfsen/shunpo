@@ -70,8 +70,7 @@ async fn handle_shunpo_socket(
     gui_tx: &async_channel::Sender<GuiMessage>,
 ) -> Result<(), CoordinatorError> {
     let gui_cmd = match msg {
-        ShunpoSocketEventData::Wake => GuiMessage::Wake,
-        ShunpoSocketEventData::Sleep => GuiMessage::Sleep,
+        ShunpoSocketEventData::ToggleUiMode => GuiMessage::ToggleUiMode,
     };
 
     gui_tx.send(gui_cmd).await?;
@@ -93,8 +92,7 @@ async fn handle_feedback(
     gui_tx: &async_channel::Sender<GuiMessage>,
 ) -> Result<(), CoordinatorError> {
     let gui_cmd = match msg {
-        FeedbackData::Sleep => { GuiMessage::Sleep },
-        FeedbackData::DeepSleep => { GuiMessage::DeepSleep },
+        FeedbackData::GuiMessagePassthrough(g) => { g }
         FeedbackData::Run(run) => {
 
             // TODO: proper arg parsing

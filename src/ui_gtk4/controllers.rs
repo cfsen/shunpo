@@ -17,6 +17,7 @@ use std::cell::RefCell;
 use std::rc::Rc;
 use tokio::sync::mpsc;
 
+use crate::coordinator::types::GuiMessage;
 use crate::{
     coordinator::types::{
         CoordinatorMessage,
@@ -85,7 +86,7 @@ pub fn search_controller(
 
             if text.is_empty() {
                 let _ = feedback_tx.send(CoordinatorMessage::Feedback(
-                    FeedbackData::Sleep
+                    FeedbackData::GuiMessagePassthrough(GuiMessage::Sleep)
                 ));
                 return;
             }
@@ -94,7 +95,7 @@ pub fn search_controller(
             }
             else if text == ":deepsleep" {
                 let _ = feedback_tx.send(CoordinatorMessage::Feedback(
-                    FeedbackData::DeepSleep
+                    FeedbackData::GuiMessagePassthrough(GuiMessage::DeepSleep)
                 ));
                 return;
             }
