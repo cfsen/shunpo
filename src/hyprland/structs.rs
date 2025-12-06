@@ -1,27 +1,25 @@
 use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
+use crate::{ id_type, string_type };
 
-#[derive(Debug, Serialize, Deserialize, Clone, Hash, Eq, PartialEq)]
-#[serde(transparent)]
-pub struct MonitorId(i32);
-impl From<i32> for MonitorId {
-    fn from(untyped_id: i32) -> Self { Self(untyped_id) }
-}
-#[derive(Debug, Serialize, Deserialize, Clone, Hash, Eq, PartialEq)]
-#[serde(transparent)]
-pub struct WorkspaceId(i32);
-impl From<i32> for WorkspaceId {
-    fn from(untyped_id: i32) -> Self { Self(untyped_id) }
-}
+//
+// newtype definitions
+//
+id_type!(MonitorId);
+id_type!(WorkspaceId);
+
+string_type!(MonitorName);
+string_type!(MonitorDesc);
+string_type!(WorkspaceName);
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Workspace {
     pub id: WorkspaceId,
-    pub name: String,
+    pub name: WorkspaceName,
     pub monitor: String,
     #[serde(rename = "monitorID")]
-    pub monitor_id: i32,
+    pub monitor_id: MonitorId,
     pub windows: i32,
     #[serde(rename = "hasfullscreen")]
     pub has_fullscreen: bool,
@@ -72,8 +70,8 @@ pub struct Client {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Monitor {
     pub id: MonitorId,
-    pub name: String,
-    pub description: String,
+    pub name: MonitorName,
+    pub description: MonitorDesc,
     pub make: String,
     pub model: String,
     pub serial: String,
@@ -154,6 +152,6 @@ pub struct Layer {
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct WorkspaceInfo {
-    pub id: i32,
+    pub id: WorkspaceId,
     pub name: String,
 }
