@@ -42,7 +42,7 @@ impl FullscreenEvent {
 pub struct Workspace {
     pub id: WorkspaceId,
     pub name: WorkspaceName,
-    pub monitor: MonitorId,
+    pub monitor: MonitorName,
     #[serde(rename = "monitorID")]
     pub monitor_id: MonitorId,
     pub windows: i32,
