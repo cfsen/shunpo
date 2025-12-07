@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
-use crate::{ id_type, string_type };
+use crate::{ hyprland::error::HyprError, id_type, string_type };
 
 //
 // newtype definitions
@@ -9,15 +9,40 @@ use crate::{ id_type, string_type };
 id_type!(MonitorId);
 id_type!(WorkspaceId);
 
-string_type!(MonitorName);
+string_type!(Floating);
+string_type!(KeyboardName);
+string_type!(LayoutName);
 string_type!(MonitorDesc);
+string_type!(MonitorName);
+string_type!(Namespace);
+string_type!(Owner);
+string_type!(PinState);
+string_type!(State);
+string_type!(SubmapName);
+string_type!(WindowAddr);
+string_type!(WindowClass);
+string_type!(WindowTitle);
 string_type!(WorkspaceName);
+
+pub enum FullscreenEvent {
+    Exited,
+    Entered,
+}
+impl FullscreenEvent {
+    pub fn parse_raw(value: &str) -> Result<FullscreenEvent, HyprError> {
+        match value {
+            "0" => Ok(FullscreenEvent::Exited),
+            "1" =>  Ok(FullscreenEvent::Entered),
+            _ => Err(HyprError::EventParseFailed),
+        }
+    }
+}
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Workspace {
     pub id: WorkspaceId,
     pub name: WorkspaceName,
-    pub monitor: String,
+    pub monitor: MonitorId,
     #[serde(rename = "monitorID")]
     pub monitor_id: MonitorId,
     pub windows: i32,
@@ -33,7 +58,7 @@ pub struct Workspace {
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Client {
-    pub address: String,
+    pub address: WindowAddr,
     pub mapped: bool,
     pub hidden: bool,
     pub at: [i32; 2],
@@ -42,8 +67,8 @@ pub struct Client {
     pub floating: bool,
     pub pseudo: bool,
     pub monitor: Option<u32>,
-    pub class: String,
-    pub title: String,
+    pub class: WindowClass,
+    pub title: WindowTitle,
     #[serde(rename = "initialClass")]
     pub initial_class: String,
     #[serde(rename = "initialTitle")]
