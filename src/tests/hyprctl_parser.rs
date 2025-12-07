@@ -68,3 +68,84 @@ fn test_hyprctl_serde_parses_monitors() {
     assert_eq!(monitor2.available_modes.len(), 15);
     assert!((monitor2.refresh_rate - 59.951).abs() < 0.001);
 }
+
+#[test]
+fn test_hyprctl_serde_parses_workspaces() {
+    let mockup = include_str!("fixtures/hyprctl_workspaces.json");
+
+    let workspaces = serde_json::from_str::<Vec<Workspace>>(mockup)
+        .expect("should deserialize workspace JSON");
+
+    // should have exactly 7 workspaces
+    assert_eq!(workspaces.len(), 7);
+
+    // test special workspace (magic)
+    let special = &workspaces[0];
+    assert_eq!(special.id, WorkspaceId::from(-98));
+    assert_eq!(special.name, WorkspaceName::from("special:magic"));
+    assert_eq!(special.monitor, MonitorName::from("DP-3"));
+    assert_eq!(special.monitor_id, MonitorId::from(1));
+    assert_eq!(special.windows, 1);
+    assert!(!special.has_fullscreen);
+    assert_eq!(special.last_window, "0x0123456789ab0");
+    assert_eq!(special.last_window_title, "Special workspace");
+    assert!(!special.is_persistent);
+
+    // test workspace 4
+    let ws4 = &workspaces[1];
+    assert_eq!(ws4.id, WorkspaceId::from(4));
+    assert_eq!(ws4.name, WorkspaceName::from("WorkspaceId=4"));
+    assert_eq!(ws4.monitor, MonitorName::from("DP-3"));
+    assert_eq!(ws4.monitor_id, MonitorId::from(1));
+    assert_eq!(ws4.windows, 1);
+    assert!(!ws4.has_fullscreen);
+    assert_eq!(ws4.last_window, "0x0123456789ab1");
+    assert_eq!(ws4.last_window_title, "App on WorkspaceId=4");
+
+    // test workspace 1
+    let ws1 = &workspaces[2];
+    assert_eq!(ws1.id, WorkspaceId::from(1));
+    assert_eq!(ws1.name, WorkspaceName::from("WorkspaceId=1"));
+    assert_eq!(ws1.monitor, MonitorName::from("DP-3"));
+    assert_eq!(ws1.monitor_id, MonitorId::from(1));
+
+    // test workspace 5 (on DP-2, multiple windows)
+    let ws5 = &workspaces[3];
+    assert_eq!(ws5.id, WorkspaceId::from(5));
+    assert_eq!(ws5.name, WorkspaceName::from("WorkspaceId=5"));
+    assert_eq!(ws5.monitor, MonitorName::from("DP-2"));
+    assert_eq!(ws5.monitor_id, MonitorId::from(0));
+    assert_eq!(ws5.windows, 3, "workspace 5 should have 3 windows");
+    assert_eq!(ws5.last_window, "0x0123456789ab3");
+
+    // test workspace 3
+    let ws3 = &workspaces[4];
+    assert_eq!(ws3.id, WorkspaceId::from(3));
+    assert_eq!(ws3.name, WorkspaceName::from("3"));
+    assert_eq!(ws3.monitor, MonitorName::from("DP-3"));
+    assert_eq!(ws3.windows, 1);
+
+    // test workspace 2 (has fullscreen)
+    let ws2 = &workspaces[5];
+    assert_eq!(ws2.id, WorkspaceId::from(2));
+    assert_eq!(ws2.name, WorkspaceName::from("2"));
+    assert_eq!(ws2.monitor, MonitorName::from("DP-3"));
+    assert_eq!(ws2.monitor_id, MonitorId::from(1));
+    assert_eq!(ws2.windows, 3, "workspace 2 should have 3 windows");
+    assert!(ws2.has_fullscreen, "workspace 2 should have fullscreen window");
+    assert_eq!(ws2.last_window, "0x0123456789ab5");
+    assert_eq!(ws2.last_window_title, "App on WorkspaceId=2");
+
+    // test workspace 6 (on DP-2)
+    let ws6 = &workspaces[6];
+    assert_eq!(ws6.id, WorkspaceId::from(6));
+    assert_eq!(ws6.name, WorkspaceName::from("6"));
+    assert_eq!(ws6.monitor, MonitorName::from("DP-2"));
+    assert_eq!(ws6.monitor_id, MonitorId::from(0));
+    assert_eq!(ws6.windows, 1);
+    assert!(!ws6.has_fullscreen);
+    assert_eq!(ws6.last_window, "0x0123456789ab6");
+
+    // verify all workspaces are not persistent
+    assert!(workspaces.iter().all(|ws| !ws.is_persistent));
+}

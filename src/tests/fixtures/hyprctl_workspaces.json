@@ -1,0 +1,71 @@
+[{
+    "id": -98,
+    "name": "special:magic",
+    "monitor": "DP-3",
+    "monitorID": 1,
+    "windows": 1,
+    "hasfullscreen": false,
+    "lastwindow": "0x0123456789ab0",
+    "lastwindowtitle": "Special workspace",
+    "ispersistent": false
+},{
+    "id": 4,
+    "name": "WorkspaceId=4",
+    "monitor": "DP-3",
+    "monitorID": 1,
+    "windows": 1,
+    "hasfullscreen": false,
+    "lastwindow": "0x0123456789ab1",
+    "lastwindowtitle": "App on WorkspaceId=4",
+    "ispersistent": false
+},{
+    "id": 1,
+    "name": "WorkspaceId=1",
+    "monitor": "DP-3",
+    "monitorID": 1,
+    "windows": 1,
+    "hasfullscreen": false,
+    "lastwindow": "0x0123456789ab2",
+    "lastwindowtitle": "App on WorkspaceId=1",
+    "ispersistent": false
+},{
+    "id": 5,
+    "name": "WorkspaceId=5",
+    "monitor": "DP-2",
+    "monitorID": 0,
+    "windows": 3,
+    "hasfullscreen": false,
+    "lastwindow": "0x0123456789ab3",
+    "lastwindowtitle": "App on WorkspaceId=5",
+    "ispersistent": false
+},{
+    "id": 3,
+    "name": "3",
+    "monitor": "DP-3",
+    "monitorID": 1,
+    "windows": 1,
+    "hasfullscreen": false,
+    "lastwindow": "0x0123456789ab4",
+    "lastwindowtitle": "App on WorkspaceId=3",
+    "ispersistent": false
+},{
+    "id": 2,
+    "name": "2",
+    "monitor": "DP-3",
+    "monitorID": 1,
+    "windows": 3,
+    "hasfullscreen": true,
+    "lastwindow": "0x0123456789ab5",
+    "lastwindowtitle": "App on WorkspaceId=2",
+    "ispersistent": false
+},{
+    "id": 6,
+    "name": "6",
+    "monitor": "DP-2",
+    "monitorID": 0,
+    "windows": 1,
+    "hasfullscreen": false,
+    "lastwindow": "0x0123456789ab6",
+    "lastwindowtitle": "App on WorkspaceId=6",
+    "ispersistent": false
+}]
