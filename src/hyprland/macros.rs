@@ -9,14 +9,14 @@ macro_rules! id_type {
         pub struct $name(i32);
 
         impl From<i32> for $name {
-        fn from(value: i32) -> Self { Self(value) }
+            fn from(value: i32) -> Self { Self(value) }
         }
 
         impl TryFrom<&str> for $name {
         type Error = std::num::ParseIntError;
-        fn try_from(value: &str) -> Result<Self, Self::Error> {
-        value.parse::<i32>().map(Self)
-        }
+            fn try_from(value: &str) -> Result<Self, Self::Error> {
+                value.parse::<i32>().map(Self)
+            }
         }
     };
 }
@@ -28,15 +28,15 @@ macro_rules! string_type {
         pub struct $name(String);
 
         impl From<String> for $name {
-        fn from(value: String) -> Self { Self(value) }
+            fn from(value: String) -> Self { Self(value) }
         }
         impl From<&str> for $name {
-        fn from(value: &str) -> Self { Self(value.to_string()) }
+            fn from(value: &str) -> Self { Self(value.to_string()) }
         }
         impl std::fmt::Display for $name {
-        fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "{}", self.0)
-        }
+            fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+                write!(f, "{}", self.0)
+            }
         }
     };
 }
