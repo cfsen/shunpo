@@ -4,7 +4,7 @@
 #[macro_export]
 macro_rules! id_type {
     ($name:ident) => {
-        #[derive(Debug, Serialize, Deserialize, Clone, Hash, Eq, PartialEq)]
+        #[derive(Debug, Serialize, Deserialize, Clone, Copy, Hash, Eq, PartialEq)]
         #[serde(transparent)]
         pub struct $name(i32);
 
