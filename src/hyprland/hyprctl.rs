@@ -3,7 +3,7 @@ use log::{error, info};
 use serde::de::DeserializeOwned;
 use std::{env, process::Command};
 
-use crate::hyprland::structs::{Client, Monitor, Workspace};
+use crate::hyprland::structs::{Client, Layers, Monitor, Workspace};
 
 /// Execute a hyprctl command and return the output
 pub fn hyprctl(args: &[&str]) -> Result<String> {
@@ -37,6 +37,12 @@ pub fn get_clients() -> Result<Vec<Client>> {
 pub fn get_monitors() -> Result<Vec<Monitor>> {
     let output = hyprctl(&["monitors"])?;
     from_json_or_panic(&output, "get_monitors")
+}
+
+/// Get all layers
+pub fn get_layers() -> Result<Layers> {
+    let output = hyprctl(&["layers"])?;
+    from_json_or_panic(&output, "get_layers")
 }
 
 /// Dispatch a Hyprland command
