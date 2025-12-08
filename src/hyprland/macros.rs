@@ -18,6 +18,11 @@ macro_rules! id_type {
                 value.parse::<i32>().map(Self)
             }
         }
+        impl std::fmt::Display for $name {
+            fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+                write!(f, "{}", self.0)
+            }
+        }
     };
 }
 #[macro_export]
