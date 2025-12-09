@@ -1,4 +1,4 @@
-use crate::hyprland::structs::{Monitor, MonitorDesc, MonitorId, MonitorName, Workspace, WorkspaceId, WorkspaceName};
+use crate::hyprland::structs::{Client, Monitor, MonitorDesc, MonitorId, MonitorName, WindowAddr, WindowClass, WindowTitle, Workspace, WorkspaceId, WorkspaceName};
 
 #[test]
 fn test_hyprctl_serde_parses_monitors() {
@@ -148,4 +148,119 @@ fn test_hyprctl_serde_parses_workspaces() {
 
     // verify all workspaces are not persistent
     assert!(workspaces.iter().all(|ws| !ws.is_persistent));
+}
+
+#[test]
+fn test_hyprctl_serde_parses_clients() {
+    let mockup = include_str!("fixtures/hyprctl_clients.json");
+
+    let clients = serde_json::from_str::<Vec<Client>>(mockup)
+        .expect("should deserialize clients JSON");
+
+    // should have exactly 11 clients
+    assert_eq!(clients.len(), 11);
+
+    // test first client (workspace 2)
+    let client0 = &clients[0];
+    assert_eq!(client0.address, WindowAddr::from("0x0123456789a0"));
+    assert!(client0.mapped);
+    assert!(!client0.hidden);
+    assert_eq!(client0.at, [56, 0]);
+    assert_eq!(client0.size, [1252, 720]);
+    assert_eq!(client0.workspace.id, WorkspaceId::from(2));
+    assert_eq!(client0.workspace.name, "WorkspaceId=2");
+    assert!(!client0.floating);
+    assert!(!client0.pseudo);
+    assert_eq!(client0.monitor, Some(1));
+    assert_eq!(client0.class, WindowClass::from("test.client.class0"));
+    assert_eq!(client0.title, WindowTitle::from("Test Client Title 0"));
+    assert_eq!(client0.initial_class, "test.client.initialclass0");
+    assert_eq!(client0.initial_title, "Test Client Initial Title 0");
+    assert_eq!(client0.pid, 10000);
+    assert!(!client0.xwayland);
+    assert!(!client0.pinned);
+    assert_eq!(client0.fullscreen, 0);
+    assert_eq!(client0.fullscreen_client, 0);
+    assert!(client0.grouped.is_empty());
+    assert!(client0.tags.is_empty());
+    assert_eq!(client0.swallowing, "0x0");
+    assert_eq!(client0.focus_history_id, 3);
+    assert!(!client0.inhibiting_idle);
+    assert_eq!(client0.xdg_tag, "");
+    assert_eq!(client0.xdg_description, "");
+
+    // test special workspace client
+    let client1 = &clients[1];
+    assert_eq!(client1.address, WindowAddr::from("0x0123456789a1"));
+    assert_eq!(client1.workspace.id, WorkspaceId::from(-98));
+    assert_eq!(client1.workspace.name, "special:magic");
+    assert_eq!(client1.size, [2504, 1440]);
+    assert_eq!(client1.class, WindowClass::from("test.client.class1"));
+    assert_eq!(client1.focus_history_id, 10);
+
+    // test client on monitor 0 (DP-2)
+    let client2 = &clients[2];
+    assert_eq!(client2.address, WindowAddr::from("0x0123456789a2"));
+    assert_eq!(client2.at, [2560, 0]);
+    assert_eq!(client2.size, [2560, 1440]);
+    assert_eq!(client2.workspace.id, WorkspaceId::from(6));
+    assert_eq!(client2.monitor, Some(0));
+    assert_eq!(client2.focus_history_id, 9);
+
+    // test xwayland client
+    let client3 = &clients[3];
+    assert_eq!(client3.address, WindowAddr::from("0x0123456789a3"));
+    assert!(client3.xwayland, "client 3 should be an xwayland window");
+    assert_eq!(client3.workspace.id, WorkspaceId::from(4));
+    assert_eq!(client3.class, WindowClass::from("test.client.class3"));
+
+    // test workspace 5 clients (multiple on same workspace)
+    let client4 = &clients[4];
+    assert_eq!(client4.workspace.id, WorkspaceId::from(5));
+    assert_eq!(client4.at, [2560, 0]);
+    assert_eq!(client4.size, [1280, 720]);
+
+    let client5 = &clients[5];
+    assert_eq!(client5.workspace.id, WorkspaceId::from(5));
+    assert_eq!(client5.at, [3840, 0]);
+    assert_eq!(client5.size, [1280, 1440]);
+
+    // test workspace 1 client
+    let client6 = &clients[6];
+    assert_eq!(client6.address, WindowAddr::from("0x0123456789a6"));
+    assert_eq!(client6.workspace.id, WorkspaceId::from(1));
+    assert_eq!(client6.focus_history_id, 2);
+
+    // test another xwayland client
+    let client7 = &clients[7];
+    assert_eq!(client7.workspace.id, WorkspaceId::from(3));
+    assert!(client7.xwayland, "client 7 should be an xwayland window");
+
+    // test workspace 2 clients (has 3 total)
+    let client8 = &clients[8];
+    assert_eq!(client8.workspace.id, WorkspaceId::from(2));
+    assert_eq!(client8.at, [1308, 0]);
+    assert_eq!(client8.size, [1252, 720]);
+
+    let client9 = &clients[9];
+    assert_eq!(client9.workspace.id, WorkspaceId::from(2));
+    assert_eq!(client9.at, [56, 720]);
+    assert_eq!(client9.size, [2504, 720]);
+    assert_eq!(client9.focus_history_id, 1);
+
+    // test last client (lowest focus history)
+    let client10 = &clients[10];
+    assert_eq!(client10.address, WindowAddr::from("0x0123456789b0"));
+    assert_eq!(client10.workspace.id, WorkspaceId::from(5));
+    assert_eq!(client10.focus_history_id, 0, "should have lowest focus history ID");
+
+    // verify no clients are floating, pinned, or fullscreen
+    assert!(clients.iter().all(|c| !c.floating));
+    assert!(clients.iter().all(|c| !c.pinned));
+    assert!(clients.iter().all(|c| c.fullscreen == 0));
+    assert!(clients.iter().all(|c| c.fullscreen_client == 0));
+
+    // verify xwayland distribution (2 xwayland, 9 native)
+    let xwayland_count = clients.iter().filter(|c| c.xwayland).count();
+    assert_eq!(xwayland_count, 2, "should have exactly 2 xwayland windows");
 }
