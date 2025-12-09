@@ -38,7 +38,7 @@ impl FullscreenEvent {
     }
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct Workspace {
     pub id: WorkspaceId,
     pub name: WorkspaceName,
@@ -92,7 +92,7 @@ pub struct Client {
     pub xdg_description: String,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct Monitor {
     pub id: MonitorId,
     pub name: MonitorName,
@@ -175,7 +175,7 @@ pub struct Layer {
     pub pid: i32,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct WorkspaceInfo {
     pub id: WorkspaceId,
     pub name: String,
