@@ -144,7 +144,7 @@ pub struct Monitor {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Layers {
     #[serde(flatten)]
-    pub monitors: HashMap<String, MonitorLayers>, // monitor name
+    pub monitors: HashMap<MonitorName, MonitorLayers>, // monitor name
 }
 
 #[derive(Debug, Deserialize, Serialize)]
