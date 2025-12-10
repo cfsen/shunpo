@@ -77,7 +77,6 @@ pub fn build_ui(
     header_box.append(&volume);
 
     launcher_box.append(&header_box);
-    // launcher_box.append(&search);
     launcher_box.append(&results_window);
 
     // controllers
