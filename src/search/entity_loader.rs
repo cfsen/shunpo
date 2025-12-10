@@ -1,5 +1,5 @@
 use freedesktop_desktop_entry::Locale;
-use log::{error, info};
+use log::{debug, error, info};
 use std::ffi::OsStr;
 use std::{env, fs, path::PathBuf};
 use std::os::unix::fs::PermissionsExt;
@@ -53,7 +53,7 @@ pub fn scan_desktop_executables() -> Vec<ExecutableEntity> {
 
         let no_display = entry.no_display();
         if no_display {
-            info!("no_display=true for: {}", ui_name);
+            debug!("no_display=true for: {}", ui_name);
             continue;
         }
 
