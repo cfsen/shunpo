@@ -25,6 +25,7 @@ impl ShunpoState {
     }
 }
 
+#[derive(Clone)]
 pub enum UIMode {
     Launcher,
     Clock,
