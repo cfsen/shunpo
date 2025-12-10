@@ -141,6 +141,20 @@ pub struct Monitor {
     pub available_modes: Vec<String>,
 }
 
+#[derive(Copy, Clone, PartialEq, Eq)]
+pub enum LayerLevel {
+    Bottom,
+    Overlay,
+}
+impl std::fmt::Display for LayerLevel {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        match self {
+            LayerLevel::Bottom=> { write!(f, "Bottom") },
+            LayerLevel::Overlay => { write!(f, "Overlay") },
+        }
+    }
+}
+
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Layers {
     #[serde(flatten)]
