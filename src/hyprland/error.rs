@@ -1,31 +1,32 @@
 pub enum HyprError {
     EventParseFailed,
-
-    MonitorFailedGetWorkspace,
-    MonitorIdExists,
+    HyprCtlFetchLayers,
+    HyprCtlFetchMonitors,
+    HyprCtlFetchWorkspaces,
     MonitorIdNotFound,
-    MonitorNoneFocused,
-
     ParseIntError,
-
-    WorkspaceIdExists,
+    ShunpoInvariantAllFullscreen,
+    ShunpoInvariantTargetTopScore,
+    ShunpoNotFound,
+    ShunpoTargetNoSolution,
     WorkspaceIdNotFound,
 
-    NotImplemented,
     Unspecified,
 }
 impl std::fmt::Display for HyprError {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
             HyprError::EventParseFailed => write!(f, "EventParseFailed"),
-            HyprError::MonitorFailedGetWorkspace => write!(f, "MonitorFailedGetWorkspace"),
-            HyprError::MonitorIdExists => write!(f, "MonitorIdExists"),
+            HyprError::HyprCtlFetchLayers => write!(f, "HyprCtlFetchLayers"),
+            HyprError::HyprCtlFetchMonitors => write!(f, "HyprCtlFetchMonitors"),
+            HyprError::HyprCtlFetchWorkspaces => write!(f, "HyprCtlFetchWorkspaces"),
             HyprError::MonitorIdNotFound => write!(f, "MonitorIdNotFound"),
-            HyprError::MonitorNoneFocused => write!(f, "MonitorNoneFocused"),
             HyprError::ParseIntError => write!(f, "ParseIntError"),
-            HyprError::WorkspaceIdExists => write!(f, "WorkspaceIdExists"),
+            HyprError::ShunpoInvariantAllFullscreen => write!(f, "ShunpoInvariantAllFullscreen"),
+            HyprError::ShunpoInvariantTargetTopScore => write!(f, "ShunpoInvariantTopScore"),
+            HyprError::ShunpoNotFound => write!(f, "ShunpoNotFound"),
+            HyprError::ShunpoTargetNoSolution => write!(f, "ShunpoTargetNoSolution"),
             HyprError::WorkspaceIdNotFound => write!(f, "WorkspaceIdNotFound"),
-            HyprError::NotImplemented => write!(f, "NotImplemented"),
             HyprError::Unspecified => write!(f, "Unspecified"),
         }
     }
