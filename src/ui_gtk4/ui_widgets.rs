@@ -12,8 +12,9 @@ use crate::system;
 pub fn volume() -> Scale {
     let volume_adj = Adjustment::new(50.0, 0.0, 100.0, 1.0, 10.0, 0.0);
     let volume_scale = Scale::new(Orientation::Horizontal, Some(&volume_adj));
-    volume_scale.set_width_request(200);
+    volume_scale.set_size_request(200, 20);
     volume_scale.set_draw_value(false);
+    volume_scale.has_origin();
 
     if let Ok(vol) = system::volume::get_volume() {
         volume_adj.set_value(vol as f64);
@@ -35,23 +36,6 @@ pub fn clock() -> Label {
         Local::now().format("%H:%M").to_string()
     }
 
-    let provider = gtk4::CssProvider::new();
-    provider.load_from_data(
-        "
-        .clock-label {
-            font-family: 'BlexMono Nerd Font', '0xProto Nerd Font Mono', 'Monospace', 'Courier New';
-            font-size: 21px;
-            color: #EAEA6EB;
-        }
-        "
-    );
-
-    gtk4::style_context_add_provider_for_display(
-        &gtk4::gdk::Display::default().expect("Could not connect to display"),
-        &provider,
-        gtk4::STYLE_PROVIDER_PRIORITY_APPLICATION,
-    );
-
     let clock_label = Label::new(Some(&time()));
     clock_label.set_halign(Align::Start);
     clock_label.add_css_class("clock-label");
@@ -70,7 +54,7 @@ pub fn clock() -> Label {
 pub fn search() -> Entry {
     let search_entry = Entry::new();
     search_entry.set_hexpand(true);
-    search_entry.set_placeholder_text(Some("..."));
+    search_entry.set_placeholder_text(Some(""));
     search_entry
 }
 

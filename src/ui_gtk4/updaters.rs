@@ -21,7 +21,7 @@ pub fn toggle_ui_mode(widgets: &ShunpoWidgets, state: &ShunpoState) {
             widgets.window.set_anchor(Edge::Left, false);
             widgets.window.set_anchor(Edge::Right, true);
             widgets.window.set_anchor(Edge::Bottom, true);
-            widgets.window.set_default_size(76,16);
+            widgets.window.set_default_size(70,10);
 
             widgets.volume.set_visible(false);
             widgets.search.set_visible(false);

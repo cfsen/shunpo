@@ -1,0 +1,109 @@
+/* sharp corners */
+* {
+	border-radius: 0px;
+}
+
+window {
+	background-color: #242226;
+}
+list {
+	background-color: #242226;
+}
+row {
+	font-family: '0xProto Nerd Font Mono', 'Monospace', 'Courier New';
+	font-size: 16px;
+	background-color: #242226;
+}
+row:selected {
+	background-color: #47028B;
+}
+scrolledwindow {
+	background-color: #242226;
+}
+
+
+entry {
+	font-family: '0xProto Nerd Font Mono', 'Monospace', 'Courier New';
+	font-size: 16px;
+	color: #EAE6EB;
+	background: transparent;
+	border: none;
+	border-bottom: 1px solid #46444B;
+	box-shadow: none;
+	padding: 0;
+	padding-left: 3px;
+	margin-top: 20px;
+	margin-bottom: 20px;
+	min-height: 0;
+	line-height: 1;
+}
+
+entry:focus {
+	border-bottom: 2px solid #EAE6EB;
+	outline: none;
+}
+
+entry text {
+	background: transparent;
+	min-height: 0;
+	height: 14px;
+	margin: 0;
+	padding: 0;
+}
+
+entry > * {
+	padding: 0;
+	margin: 0;
+	min-height: 0;
+	height: 10px;
+	line-height: 1;
+}
+
+scale {
+	margin: 10px 0 13px 13px;
+}
+
+scale trough {
+	color: #8E8993;
+	background-color: transparent;
+	background-image: none;
+	border: 4px solid #8E8993;
+	height: 10px;
+	min-height: 10px;
+	margin-top: 8px;
+	border-radius: 0;
+	box-shadow: none;
+}
+
+scale trough highlight {
+	color: #EAE6EB;
+	background-color: #8E8993;
+	background-image: none;
+	border: none;
+	min-height: 10px;
+	height: 10px;
+	border-radius: 0;
+	box-shadow: none;
+}
+
+scale slider {
+	background-color: #8E8993;
+	border: none;
+	border-radius: 0;
+	width: 6px;
+	min-width: 1px;
+	min-height: 6px;
+	height: 6px;
+	box-shadow: none;
+}
+
+scale slider:hover {
+	background-color: #dfdfdf;
+}
+
+.clock-label {
+	font-family: 'BlexMono Nerd Font', '0xProto Nerd Font Mono', 'Monospace', 'Courier New';
+	font-size: 21px;
+	color: #EAE6EB;
+	margin: 7px 13px 7px 13px;
+}

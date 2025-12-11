@@ -1,10 +1,5 @@
 use gtk4::{
-    Application,
-    ApplicationWindow,
-    Box,
-    Orientation,
-
-    prelude::*,
+    gdk, prelude::*, Application, ApplicationWindow, Box, CssProvider, Orientation, StyleContext
 };
 use gtk4_layer_shell::{
     Edge,
@@ -41,6 +36,24 @@ pub fn build_ui(
     feedback_tx: mpsc::UnboundedSender<CoordinatorMessage>,
     state: Rc<RefCell<ShunpoState>>,
 ) -> ShunpoWidgets {
+    // load css
+    let provider = CssProvider::new();
+    provider.load_from_data(include_str!("fixtures/styles.css"));
+    if let Some(display) = gdk::Display::default() {
+        gtk4::style_context_add_provider_for_display(
+            &display,
+            &provider,
+            gtk4::STYLE_PROVIDER_PRIORITY_APPLICATION,
+        );
+    }
+
+    // caret settings
+    if let Some(settings) = gtk4::Settings::default() {
+        settings.set_gtk_cursor_blink(false);
+
+        // settings.set_gtk_cursor_aspect_ratio(0.4); 
+    }
+
     let window = ApplicationWindow::builder()
         .application(app)
         .default_width(800)
@@ -61,13 +74,13 @@ pub fn build_ui(
     window.set_anchor(Edge::Bottom, false);
 
     // launcher container
-    let launcher_box = Box::new(Orientation::Vertical, 7);
-    launcher_box.set_margin_top(7);
-    launcher_box.set_margin_bottom(7);
-    launcher_box.set_margin_start(7);
-    launcher_box.set_margin_end(7);
+    let launcher_box = Box::new(Orientation::Vertical, 0);
+    launcher_box.set_margin_top(0);
+    launcher_box.set_margin_bottom(0);
+    launcher_box.set_margin_start(0);
+    launcher_box.set_margin_end(0);
 
-    let header_box = Box::new(Orientation::Horizontal, 7);
+    let header_box = Box::new(Orientation::Horizontal, 0);
     let clock = clock();
     let volume = volume();
     let search = search();
