@@ -1,4 +1,4 @@
-use crate::search::{entity_model::LauncherEntity};
+use crate::{hyprland::structs::{LayerLevel, MonitorName}, search::entity_model::LauncherEntity};
 
 //
 // coordinator inbound messages
@@ -11,7 +11,7 @@ pub enum CoordinatorMessage {
     Feedback(FeedbackData),
 }
 pub struct HyprlandEventData {
-    pub raw_event: String,
+    pub gui_msg: GuiMessage,
 }
 pub enum ShunpoSocketEventData {
     ToggleUiMode,
@@ -38,5 +38,6 @@ pub enum GuiMessage {
     Sleep,
     DeepSleep,
     DisplayResults(SearchMessageData),
+    WaylandMonitorLayer { target_monitor: MonitorName, target_layer: LayerLevel },
 }
 

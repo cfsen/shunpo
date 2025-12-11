@@ -24,14 +24,20 @@ pub async fn subscribe_events(tx: UnboundedSender<CoordinatorMessage>) -> Result
     let reader = BufReader::new(stream);
     let mut lines = reader.lines();
 
+    let mut state: HyprlandState = HyprlandState::default();
+
     info!("Listening for Hyprland events...");
 
     while let Some(line) = lines.next_line().await? {
-        // let _ = HyprlandEvent::parse_event(&line);
-        let _ = tx.send(CoordinatorMessage::HyprlandEvent(HyprlandEventData {
-            raw_event: line,
-        }));
+        if let Ok(event) = HyprlandEvent::parse_event(&line) {
+            if let Some(gui_msg) = update_state(&mut state, event) {
+                info!("msg: event listener->coordinator");
+                let _ = tx.send(gui_msg);
+            }
+        }
     }
+
+    info!("Hyprland event listener exiting.");
 
     Ok(())
 }

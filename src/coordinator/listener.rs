@@ -37,7 +37,7 @@ async fn coordinator_listener(
     loop {
         tokio::select! {
             Some(CoordinatorMessage::HyprlandEvent(msg)) = hyprland_rx.recv()
-            => { log_error(handle_hyprland(msg), "Hyprland handler"); },
+            => { log_error(handle_hyprland(msg, &gui_tx).await, "Hyprland handler"); },
 
             Some(CoordinatorMessage::ShunpoSocketEvent(msg)) = shunpo_rx.recv()
             => { log_error(handle_shunpo_socket(msg, &gui_tx).await, "Socket handler"); },
@@ -60,8 +60,12 @@ async fn coordinator_listener(
 // handlers
 //
 
-fn handle_hyprland(msg: HyprlandEventData) -> Result<(), CoordinatorError> {
-    debug!("HyprlandEvent: {}", msg.raw_event);
+async fn handle_hyprland(
+    msg: HyprlandEventData,
+    gui_tx: &async_channel::Sender<GuiMessage>,
+) -> Result<(), CoordinatorError> {
+    gui_tx.send(msg.gui_msg).await?;
+
     Ok(())
 }
 

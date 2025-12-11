@@ -1,11 +1,15 @@
+use gtk4::gdk::Monitor;
 use gtk4::prelude::*;
 use gtk4::{
     Label, Box, Orientation, 
     ListBoxRow
 };
 use gtk4_layer_shell::{KeyboardMode, Layer, LayerShell};
+use log::{info, warn};
 
 use crate::coordinator::types::GuiMessage;
+use crate::hyprland::structs::{LayerLevel, MonitorName};
+use crate::ui_gtk4::errors::ShunpoGtk4Error;
 use crate::ui_gtk4::types::{ShunpoState, ShunpoWidgets, UIMode};
 
 pub fn handle_ui_message(msg: GuiMessage, widgets: &ShunpoWidgets, state: &mut ShunpoState) {
@@ -70,6 +74,29 @@ fn ui_mode_from_gui_message(msg: GuiMessage, widgets: &ShunpoWidgets, state: &mu
             keyboard_mode = KeyboardMode::None;
             ui_mode = UIMode::Clock;
         },
+        GuiMessage::WaylandMonitorLayer { ref target_monitor, target_layer } => {
+            match target_layer {
+                LayerLevel::Bottom => { 
+                    layer = Layer::Bottom;
+                    ui_mode = UIMode::Clock;
+                    keyboard_mode = KeyboardMode::None;
+                },
+                LayerLevel::Overlay => {
+                    layer = Layer::Overlay;
+                    ui_mode = state.ui_mode.clone();
+                    keyboard_mode = match ui_mode {
+                        UIMode::Clock => KeyboardMode::None,
+                        UIMode::Launcher => KeyboardMode::Exclusive,
+                    };
+                },
+            }
+
+            info!("Moving shunpo to monitor: {}: {}", &target_monitor, target_layer);
+            widgets.window.set_layer(layer);
+            if let Ok(monitor) = find_display(target_monitor) {
+                widgets.window.set_monitor(Some(&monitor));
+            }
+        },
         GuiMessage::ToggleUiMode => {
             panic!("UI mode switch invariant: GuiMessage::ToggleUiMode should have been translated.");
         },
@@ -90,4 +117,16 @@ fn ui_mode_from_gui_message(msg: GuiMessage, widgets: &ShunpoWidgets, state: &mu
         },
         _ => {},
     }
+}
+
+fn find_display(target_name: &MonitorName) -> Result<Monitor, ShunpoGtk4Error>  {
+    let display = gtk4::gdk::Display::default().ok_or(ShunpoGtk4Error::DefaultDisplay)?;
+    let monitors = display.monitors();
+
+    monitors
+        .iter::<gtk4::gdk::Monitor>()
+        .find_map(|m| {
+            let monitor = m.ok()?;
+            (monitor.connector()? == gtk4::glib::GString::from(target_name.to_string())).then_some(monitor)
+        }).ok_or(ShunpoGtk4Error::FindMonitor)
 }
