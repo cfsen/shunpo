@@ -17,6 +17,7 @@ gtk4 = "0.10.2"
 gtk4-layer-shell = "0.7.1"
 async-channel = "2.5.0"
 freedesktop-desktop-entry = "0.7.19"
+toml = "0.9.8"
 
 [profile.release]
 opt-level = 2
