@@ -50,7 +50,35 @@ pub fn clock() -> Label {
 
     clock_label
 }
+pub fn workspaces() -> gtk4::Box {
+    let container = gtk4::Box::new(Orientation::Horizontal, 0);
+    container.add_css_class("workspaces");
 
+    let workspaces = vec![
+        (1, false),
+        (2, true),  // active
+        (3, false),
+    ];
+
+    for (num, is_active) in workspaces {
+        let ws_box = gtk4::Box::new(Orientation::Horizontal, 0);
+
+        if is_active {
+            ws_box.add_css_class("ws-active-bg");
+        }
+        else {
+            ws_box.add_css_class("ws-inactive-bg");
+        }
+
+        let label = Label::new(Some(&num.to_string()));
+        label.add_css_class("ws-label");
+        ws_box.append(&label);
+
+        container.append(&ws_box);
+    }
+
+    container
+}
 pub fn search() -> Entry {
     let search_entry = Entry::new();
     search_entry.set_hexpand(true);

@@ -1,4 +1,4 @@
-use crate::{hyprland::structs::{LayerLevel, MonitorName}, search::entity_model::LauncherEntity};
+use crate::{hyprland::structs::{LayerLevel, MonitorId, MonitorName, WorkspaceId}, search::entity_model::LauncherEntity};
 
 //
 // coordinator inbound messages
@@ -38,6 +38,13 @@ pub enum GuiMessage {
     Sleep,
     DeepSleep,
     DisplayResults(SearchMessageData),
+    UpdateWorkspace(Vec<WorkspaceMessage>),
     WaylandMonitorLayer { target_monitor: MonitorName, target_layer: LayerLevel },
 }
 
+#[derive(Clone)]
+pub struct WorkspaceMessage {
+    pub id: String,
+    pub focused: bool,
+    pub xpos: i32,
+}

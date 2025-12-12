@@ -107,3 +107,23 @@ scale slider:hover {
 	color: #EAE6EB;
 	margin: 7px 13px 7px 13px;
 }
+
+.ws-label {
+	font-family: 'BlexMono Nerd Font', '0xProto Nerd Font Mono', 'Monospace', 'Courier New';
+	font-size: 21px;
+	color: #EAE6EB;
+}
+
+.ws-inactive-bg {
+    background-color: #242226;
+    border: 1px solid #242226;
+    padding: 4px 8px;
+    margin: 0 2px;
+}
+
+.ws-active-bg {
+    background-color: #47028B;
+    border: 1px solid #47028B;
+    padding: 4px 8px;
+    margin: 0 2px;
+}

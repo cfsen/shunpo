@@ -24,6 +24,7 @@ pub fn toggle_ui_mode(widgets: &ShunpoWidgets, state: &ShunpoState) {
             widgets.window.set_default_size(70,10);
 
             widgets.volume.set_visible(false);
+            widgets.workspaces.set_visible(true);
             widgets.search.set_visible(false);
             widgets.results.set_visible(false);
             widgets.results_window.set_visible(false);
@@ -36,6 +37,7 @@ pub fn toggle_ui_mode(widgets: &ShunpoWidgets, state: &ShunpoState) {
             widgets.window.set_default_size(800,600);
 
             widgets.volume.set_visible(true);
+            widgets.workspaces.set_visible(false);
             widgets.search.set_visible(true);
             widgets.results.set_visible(true);
             widgets.results_window.set_visible(true);

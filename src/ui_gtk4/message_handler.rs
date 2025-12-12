@@ -14,6 +14,28 @@ use crate::ui_gtk4::types::{ShunpoState, ShunpoWidgets, UIMode};
 
 pub fn handle_ui_message(msg: GuiMessage, widgets: &ShunpoWidgets, state: &mut ShunpoState) {
     match msg {
+        GuiMessage::UpdateWorkspace(workspaces) => {
+            info!("gtk received update workspace message");
+            // clear existing
+            while let Some(child) = widgets.workspaces.first_child() {
+                widgets.workspaces.remove(&child);
+            }
+
+            // update state
+            state.workspaces_data = workspaces.clone();
+
+            // populate new workspace indicators
+            for workspace in workspaces {
+                let ws_box = gtk4::Box::new(Orientation::Horizontal, 0);
+                ws_box.add_css_class(if workspace.focused { "ws-active-bg" } else { "ws-inactive-bg" });
+
+                let label = Label::new(Some(&workspace.id));
+                label.add_css_class("ws-label");
+                ws_box.append(&label);
+
+                widgets.workspaces.append(&ws_box);
+            }
+        },
         GuiMessage::DisplayResults(data) => {
             // clear existing results
             while let Some(child) = widgets.results.first_child() {
@@ -96,6 +118,9 @@ fn ui_mode_from_gui_message(msg: GuiMessage, widgets: &ShunpoWidgets, state: &mu
             if let Ok(monitor) = find_display(target_monitor) {
                 widgets.window.set_monitor(Some(&monitor));
             }
+        },
+        GuiMessage::UpdateWorkspace(_)=> {
+            panic!("UI workspace invariatn: GuiMessage::UpdateWorkspace should have been caught earlier.");
         },
         GuiMessage::ToggleUiMode => {
             panic!("UI mode switch invariant: GuiMessage::ToggleUiMode should have been translated.");

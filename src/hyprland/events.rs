@@ -6,7 +6,7 @@ use tokio::{
 };
 use log::{debug, error, info, warn};
 
-use crate::{coordinator::types::{CoordinatorMessage, GuiMessage, HyprlandEventData}, hyprland::{event_parser::HyprlandEvent, state::HyprlandState, structs::{FullscreenEvent, LayerLevel, MonitorName, Namespace, WorkspaceId}}};
+use crate::{coordinator::types::{CoordinatorMessage, GuiMessage, HyprlandEventData, WorkspaceMessage}, hyprland::{event_parser::HyprlandEvent, state::HyprlandState, structs::{FullscreenEvent, LayerLevel, MonitorName, Namespace, WorkspaceId}}};
 
 /// Subscribe to Hyprland events
 pub async fn subscribe_events(tx: UnboundedSender<CoordinatorMessage>) -> Result<()> {
@@ -55,6 +55,7 @@ fn update_state(state: &mut HyprlandState, event: HyprlandEvent) -> Option<Coord
         // monitor focus change
         HyprlandEvent::Focusedmonv2 { mname, .. } => {
             state.update_focused_monitor(mname);
+            return update_workspaces(state);
         },
         HyprlandEvent::Workspacev2 { .. } => {
             if let Err(e) = state.rebuild() {
@@ -66,21 +67,25 @@ fn update_state(state: &mut HyprlandState, event: HyprlandEvent) -> Option<Coord
             if let Err(e) = state.rebuild_workspaces() {
                 error!("Createworkspacev2: Failed to rebuild workspaces: {}", e);
             }
+            return update_workspaces(state);
         },
         HyprlandEvent::Destroyworkspacev2 { wid, .. } => {
             if let Err(e) = state.remove_workspace(wid) {
                 error!("Destroyworkspacev2: Failed to remove workspace: {}", e);
             }
+            return update_workspaces(state);
         },
         HyprlandEvent::Monitoraddedv2 { .. } => {
             if let Err(e) = state.rebuild_monitors() {
                 error!("Monitoraddedv2: Failed to rebuild monitors: {}", e);
             }
+            return update_workspaces(state);
         },
         HyprlandEvent::Monitorremovedv2 { mname, .. } => {
             if let Err(e) = state.remove_monitor(mname) {
                 error!("Monitorremovedv2: Failed to remove monitor: {}", e);
             }
+            return update_workspaces(state);
         },
         HyprlandEvent::Fullscreen { .. } => {
             if let Err(e) = state.rebuild() {
@@ -107,6 +112,26 @@ fn check_and_retarget(state: &mut HyprlandState) -> Option<CoordinatorMessage> {
         },
     }
 }
+fn update_workspaces(state: &mut HyprlandState) -> Option<CoordinatorMessage> {
+    if state.monitors.len() < 1 {
+        return None;
+    }
+
+    let mut msg: Vec<WorkspaceMessage> = state.monitors
+        .iter()
+        .map(|(_, monitor)| WorkspaceMessage {
+            id: monitor.active_workspace.id.to_string(),
+            focused: monitor.focused,
+            xpos: monitor.x,
+        })
+        .collect();
+    msg.sort_by_key(|ws| ws.xpos);
+
+    Some(CoordinatorMessage::HyprlandEvent(HyprlandEventData {
+            gui_msg: GuiMessage::UpdateWorkspace(msg),
+        }))
+}
+// TODO: refactor to take GuiMessage
 fn package_gui_message(target_monitor: &MonitorName, target_layer: LayerLevel) -> CoordinatorMessage {
     CoordinatorMessage::HyprlandEvent(HyprlandEventData {
         gui_msg: GuiMessage::WaylandMonitorLayer {

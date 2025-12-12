@@ -25,7 +25,7 @@ use crate::{
             clock,
             results,
             search,
-            volume,
+            volume, workspaces,
         },
     },
 };
@@ -80,12 +80,19 @@ pub fn build_ui(
     launcher_box.set_margin_start(0);
     launcher_box.set_margin_end(0);
 
-    let header_box = Box::new(Orientation::Horizontal, 0);
+    // container for clock mode
+    let clock_box = Box::new(Orientation::Horizontal, 0);
     let clock = clock();
+    let workspaces = workspaces();
+    workspaces.set_visible(false);
+    clock_box.append(&workspaces);
+    clock_box.append(&clock);
+
+    let header_box = Box::new(Orientation::Horizontal, 0);
     let volume = volume();
     let search = search();
     let (results_window, results) = results();
-    header_box.append(&clock);
+    header_box.append(&clock_box);
     header_box.append(&search);
     header_box.append(&volume);
 
@@ -109,6 +116,7 @@ pub fn build_ui(
 
     ShunpoWidgets {
         window,
+        workspaces,
         clock,
         volume,
         search,
