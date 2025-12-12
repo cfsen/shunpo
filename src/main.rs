@@ -1,6 +1,7 @@
 #[cfg(test)]
 mod tests;
 
+mod config;
 mod coordinator;
 mod hyprland;
 mod search;
@@ -18,7 +19,7 @@ use std::sync::OnceLock;
 use tokio::runtime::Runtime;
 
 use crate::{
-    coordinator::{listener::coordinator_run, types::{CoordinatorMessage, GuiMessage}}, search::listener::setup_search_listener, socket::{send_wakeup, shunpo_socket},
+    config::config::ShunpoConfig, coordinator::{listener::coordinator_run, types::{CoordinatorMessage, GuiMessage}}, search::listener::setup_search_listener, socket::{send_wakeup, shunpo_socket}
 };
 
 
@@ -41,6 +42,13 @@ fn main() -> ExitCode {
     let (shunpo_tx, shunpo_rx) = mpsc::unbounded_channel::<CoordinatorMessage>();
     // if no other instance of shunpo, set up socket. else send wakeup to running instance and exit.
     let _instance = setup_shunpo_socket_or_exit(shunpo_tx); // must be kept in scope
+
+    // load config or exit
+    let config = ShunpoConfig::load_or_default();
+    if let Err(_) = config {
+        error!("Exiting.");
+        exit(1)
+    }
 
     // hyprland event listener to coordinator
     let (event_tx, event_rx) = mpsc::unbounded_channel::<CoordinatorMessage>();
