@@ -18,7 +18,8 @@ An application launcher and status bar for Hyprland, currently in testing. Shunp
 ```
    bind = $mainMod CTRL, SPACE, exec, TERM_PROGRAM=/usr/bin/ghostty /path/to/shunpo
 ```
-   Shunpo is instance-aware via its own socket and will toggle between UI modes when another instance tries to run. Set `TERM_PROGRAM` to your preferred terminal.
+Shunpo is instance-aware via its own socket and will toggle between UI modes when another instance tries to run. Set `TERM_PROGRAM` to your preferred terminal.
+
 3. Proceed to configuration
 
 ## Configuration
