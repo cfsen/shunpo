@@ -6,10 +6,13 @@ use tokio::{
 };
 use log::{debug, error, info, warn};
 
-use crate::{coordinator::types::{CoordinatorMessage, GuiMessage, HyprlandEventData, WorkspaceMessage}, hyprland::{event_parser::HyprlandEvent, state::HyprlandState, structs::{FullscreenEvent, LayerLevel, MonitorName, Namespace, WorkspaceId}}};
+use crate::{config::config::ShunpoConfig, coordinator::types::{CoordinatorMessage, GuiMessage, HyprlandEventData, WorkspaceMessage}, hyprland::{event_parser::HyprlandEvent, state::HyprlandState, structs::{FullscreenEvent, LayerLevel, MonitorName, Namespace, WorkspaceId}}};
 
 /// Subscribe to Hyprland events
-pub async fn subscribe_events(tx: UnboundedSender<CoordinatorMessage>) -> Result<()> {
+pub async fn subscribe_events(
+    tx: UnboundedSender<CoordinatorMessage>,
+    config: ShunpoConfig
+) -> Result<()> {
     // get env vars
     let signature = std::env::var("HYPRLAND_INSTANCE_SIGNATURE")
         .context("HYPRLAND_INSTANCE_SIGNATURE not set")?;
@@ -25,6 +28,7 @@ pub async fn subscribe_events(tx: UnboundedSender<CoordinatorMessage>) -> Result
     let mut lines = reader.lines();
 
     let mut state: HyprlandState = HyprlandState::default();
+    state.config = Some(config);
 
     info!("Listening for Hyprland events...");
 

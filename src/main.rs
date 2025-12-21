@@ -44,16 +44,15 @@ fn main() -> ExitCode {
     let _instance = setup_shunpo_socket_or_exit(shunpo_tx); // must be kept in scope
 
     // load config or exit
-    let config = ShunpoConfig::load_or_default();
-    if let Err(_) = config {
+    let Ok(config) = ShunpoConfig::load_or_default() else {
         error!("Exiting.");
         exit(1)
-    }
+    };
 
     // hyprland event listener to coordinator
     let (event_tx, event_rx) = mpsc::unbounded_channel::<CoordinatorMessage>();
     runtime().spawn(async move {
-        if let Err(e) = hyprland::events::subscribe_events(event_tx).await {
+        if let Err(e) = hyprland::events::subscribe_events(event_tx, config.clone()).await {
             error!("Error in Hyprland listener: {:?}", e);
         }
     });

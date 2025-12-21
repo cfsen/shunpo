@@ -1,10 +1,12 @@
 use std::{cmp::Reverse, collections::HashMap};
 
-use crate::hyprland::{
+use log::{error, info};
+
+use crate::{config::config::ShunpoConfig, hyprland::{
     error::HyprError,
     hyprctl::{get_layers, get_monitors, get_workspaces},
     structs::{ LayerLevel, Monitor, MonitorLayers, MonitorName, Namespace, Workspace, WorkspaceId }
-};
+}};
 
 pub struct HyprlandState {
     pub layers: HashMap<MonitorName, MonitorLayers>,
@@ -12,6 +14,7 @@ pub struct HyprlandState {
     pub workspaces: HashMap<WorkspaceId, Workspace>,
     pub shunpo_namespace: Namespace,
     pub focused_monitor: Option<MonitorName>,
+    pub config: Option<ShunpoConfig>,
 }
 //
 // constructor
@@ -24,6 +27,7 @@ impl Default for HyprlandState {
             workspaces: HashMap::<WorkspaceId, Workspace>::new(),
             shunpo_namespace: Namespace::from("shunpo"),
             focused_monitor: None,
+            config: None,
         }
     }
 }
@@ -33,11 +37,12 @@ impl Default for HyprlandState {
 impl HyprlandState {
     /// Replaces current state by calling .populate() to rebuild from hyprctl.
     pub fn rebuild(&mut self) -> Result<(), HyprError> {
-        *self = Self::populate()?;
+        let config = self.config.clone();
+        *self = Self::populate(config)?;
         Ok(())
     }
     /// Query hyprctl to build a snapshot of current Hyprland state.
-    pub fn populate() -> Result<HyprlandState, HyprError> {
+    pub fn populate(config: Option<ShunpoConfig>) -> Result<HyprlandState, HyprError> {
         // collect monitors, layers and workspaces from hyprctl
         let layers = Self::fetch_hyprctl_layers()?;
         let monitors = Self::fetch_hyprctl_monitors()?;
@@ -56,6 +61,7 @@ impl HyprlandState {
             workspaces,
             shunpo_namespace: Namespace::from("shunpo"),
             focused_monitor,
+            config,
         })
     }
     pub fn rebuild_monitors(&mut self) -> Result<(), HyprError> {
@@ -158,7 +164,7 @@ impl HyprlandState {
                 .get(&monitor.active_workspace.id)
                 .is_some_and(|w| !w.has_fullscreen)
             {
-                candidates.push((mname.clone(), Self::monitor_score_weight(mname)));
+                candidates.push((mname.clone(), Self::monitor_score_weight(mname, &self.config)));
             }
         }
 
@@ -182,13 +188,17 @@ impl HyprlandState {
         Ok((&mname, LayerLevel::Overlay))
     }
 
-    // TODO: temporary impl pending config file
-    fn monitor_score_weight(mname: &MonitorName) -> i8 {
-        let mut monitors = HashMap::<MonitorName, i8>::new();
-        monitors.insert(MonitorName::from("DP-3"), 3);
-        monitors.insert(MonitorName::from("DP-2"), 2);
-        monitors.insert(MonitorName::from("DP-1"), 1);
+    fn monitor_score_weight(mname: &MonitorName, config: &Option<ShunpoConfig>) -> i8 {
+        let Some(config) = config else {
+            error!("Monitor priority not set, defaulting to 0. Check your config file.");
+            return 0;
+        };
 
-        monitors.get(&mname).copied().unwrap_or(0)
+        config.monitor_priority
+            .iter()
+            .position(|m| m == mname)
+            .map(|i| config.monitor_priority.len() - i)
+            .and_then(|score| score.try_into().ok())
+            .unwrap_or(0)
     }
 }

@@ -8,8 +8,8 @@ use crate::{config::error::ConfigError, hyprland::{hyprctl::get_monitors, struct
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct ShunpoConfig {
-    monitor_priority: Vec<MonitorName>,
-    terminal_path: String,
+    pub monitor_priority: Vec<MonitorName>,
+    pub terminal_path: String,
 }
 
 impl ShunpoConfig {
