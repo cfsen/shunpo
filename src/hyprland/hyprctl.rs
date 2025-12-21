@@ -53,6 +53,7 @@ pub fn dispatch(cmd: &str) -> Result<()> {
 
 /// Dispatch a terminal
 pub fn dispatch_from_term(bin: &str) -> Result<()> {
+    // TODO: TODO_PRESERVE_ENV
     if let Ok(term) = env::var("TERM_PROGRAM") {
         info!("Dispatching: {}", bin);
         hyprctl(&["dispatch", "exec", &format!("{} -e sh -c '{}'", term, bin)])?;

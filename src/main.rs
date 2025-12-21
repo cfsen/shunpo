@@ -51,8 +51,9 @@ fn main() -> ExitCode {
 
     // hyprland event listener to coordinator
     let (event_tx, event_rx) = mpsc::unbounded_channel::<CoordinatorMessage>();
+    let cfg_hypr_events = config.clone();
     runtime().spawn(async move {
-        if let Err(e) = hyprland::events::subscribe_events(event_tx, config.clone()).await {
+        if let Err(e) = hyprland::events::subscribe_events(event_tx, cfg_hypr_events).await {
             error!("Error in Hyprland listener: {:?}", e);
         }
     });
@@ -84,6 +85,7 @@ fn main() -> ExitCode {
         // TODO: TODO_PRESERVE_ENV
         // capture value of GSK_RENDERER (if any) and set it back when launching apps
         std::env::set_var("GSK_RENDERER", "cairo");
+        std::env::set_var("TERM_PROGRAM", config.terminal_path);
     }
 
     // run GTK on the main thread, passing the receiver
