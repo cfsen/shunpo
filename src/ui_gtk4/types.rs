@@ -21,7 +21,7 @@ pub struct ShunpoState {
 impl ShunpoState {
     pub fn new() -> Self {
         Self {
-            ui_mode: UIMode::Clock,
+            ui_mode: UIMode::Launcher,
             results_data: Vec::new(),
             workspaces_data: Vec::new(),
         }
