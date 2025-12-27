@@ -70,4 +70,5 @@ async fn search_listener(
             break;
         }
     }}
+    info!("Search listener exited.");
 }
