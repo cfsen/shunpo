@@ -54,6 +54,7 @@ pub fn workspaces() -> gtk4::Box {
     let container = gtk4::Box::new(Orientation::Horizontal, 0);
     container.add_css_class("workspaces");
 
+    // TODO: fetch on startup
     let workspaces = vec![
         (1, false),
         (2, true),  // active
