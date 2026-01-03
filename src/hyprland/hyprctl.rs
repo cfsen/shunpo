@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 use anyhow::{anyhow, Context, Result};
 use log::{error, info};
 use serde::de::DeserializeOwned;
