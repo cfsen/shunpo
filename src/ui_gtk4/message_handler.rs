@@ -45,6 +45,10 @@ pub fn handle_ui_message(msg: GuiMessage, widgets: &ShunpoWidgets, state: &mut S
             // update state
             state.results_data = data.results.clone();
 
+            if data.results.len() == 0 {
+                return;
+            }
+
             // populate new results
             for entity  in data.results {
                 let row = ListBoxRow::new();
@@ -58,6 +62,13 @@ pub fn handle_ui_message(msg: GuiMessage, widgets: &ShunpoWidgets, state: &mut S
 
                 row.set_child(Some(&box_));
                 widgets.results.append(&row);
+            }
+
+            // select first result
+            if let Some(target_row_idx) = widgets.results.row_at_index(
+                widgets.results.selected_row().map_or_else(|| 0, |row| row.index())
+            ){
+                widgets.results.select_row(Some(&target_row_idx));
             }
         },
         _ => { ui_mode_from_gui_message(msg, widgets, state); },
