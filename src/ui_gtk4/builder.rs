@@ -100,7 +100,9 @@ pub fn build_ui(
     launcher_box.append(&results_window);
 
     // controllers
-    let window_controller = window_controller();
+    let window_controller = window_controller(
+        feedback_tx.clone()
+    );
     window.add_controller(window_controller);
 
     let search_controller = search_controller(

@@ -31,11 +31,18 @@ use crate::{
 };
 
 
-pub fn window_controller() -> EventControllerKey {
+pub fn window_controller(
+    feedback_tx: mpsc::UnboundedSender<CoordinatorMessage>
+) -> EventControllerKey {
     let controller = EventControllerKey::new();
     controller.connect_key_pressed(move |_, key, _, _| {
+        // hide or quit on escape
         if key == Key::Escape {
-            std::process::exit(0);
+            // TODO: allow exit behavior with config 
+            // std::process::exit(0);
+            let _ = feedback_tx.send(CoordinatorMessage::Feedback(
+                FeedbackData::GuiMessagePassthrough(GuiMessage::Sleep)
+            ));
         }
         gtk4::glib::Propagation::Proceed
     });
