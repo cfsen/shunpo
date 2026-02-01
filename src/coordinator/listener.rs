@@ -104,6 +104,7 @@ async fn handle_feedback(
             let cmd = run.command
                 .trim_end_matches("%u")
                 .trim_end_matches("%U")
+                .trim_end_matches("%f")
                 .trim().to_string();
 
             let dispatch = match run.dispatcher {
