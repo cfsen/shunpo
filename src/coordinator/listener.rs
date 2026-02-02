@@ -123,8 +123,6 @@ async fn handle_feedback(
                 },
             }
 
-            // TODO: focus opened window (coordinate with hyprland event listener)
-
             GuiMessage::Sleep
         },
     };
