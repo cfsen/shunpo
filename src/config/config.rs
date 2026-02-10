@@ -8,6 +8,7 @@ use crate::{config::error::ConfigError, hyprland::{hyprctl::get_monitors, struct
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct ShunpoConfig {
+    pub version: String,
     pub monitor_priority: Vec<MonitorName>,
     pub terminal_path: String,
 }
@@ -33,12 +34,15 @@ impl ShunpoConfig {
     }
     fn load() -> Result<Self, ConfigError> {
         Self::load_config()
+        // TODO: config version check
     }
     fn auto_default() -> Result<Self, ConfigError> {
         let terminal_path = Self::collect_terminals()?;
         let monitor_priority = Self::collect_monitors()?;
+        let version = env!("CARGO_PKG_VERSION").to_string();
 
         let config = ShunpoConfig {
+            version,
             monitor_priority,
             terminal_path,
         };
