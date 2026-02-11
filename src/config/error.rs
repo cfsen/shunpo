@@ -7,6 +7,7 @@ pub enum ConfigError {
     FileWrite(std::io::Error),
     NoSupportedTerminal,
     OpenUserDir(std::env::VarError),
+    OutdatedConfig(String),
     Unspecified,
 }
 impl std::fmt::Display for ConfigError {
@@ -21,6 +22,7 @@ impl std::fmt::Display for ConfigError {
             Self::FileWrite(e) => { write!(f, "{}: FileWrite: {}", prefix, e) },
             Self::NoSupportedTerminal=> { write!(f, "{}: NoSupportedTerminal", prefix) },
             Self::OpenUserDir(e) => { write!(f, "{}: OpenUserDir: {}", prefix, e) },
+            Self::OutdatedConfig(version) => { write!(f, "{}: OutdatedConfig: {}", prefix, version) },
             Self::Unspecified => { write!(f, "{}: Unspecified", prefix) },
         }
     }
