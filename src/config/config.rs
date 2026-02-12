@@ -33,8 +33,9 @@ impl ShunpoConfig {
         })
     }
     fn load() -> Result<Self, ConfigError> {
-        Self::load_config()
-        // TODO: config version check
+        let config = Self::load_config()?;
+        Self::check_version(&config.version)?;
+        Ok(config)
     }
     fn auto_default() -> Result<Self, ConfigError> {
         let terminal_path = Self::collect_terminals()?;
@@ -117,5 +118,20 @@ impl ShunpoConfig {
 
         fs::write(&path, contents)
             .map_err(|e| ConfigError::FileWrite(e))
+    }
+}
+//
+// validation
+//
+impl ShunpoConfig {
+    fn check_version(version: &str) -> Result<(), ConfigError> {
+        match version == env!("CARGO_PKG_VERSION").to_string() {
+            true => Ok(()),
+            false => return Err(
+                ConfigError::OutdatedConfig(
+                    format!("Expected: {}, found: {}", env!("CARGO_PKG_VERSION"), version)
+                )
+            )
+        }
     }
 }
