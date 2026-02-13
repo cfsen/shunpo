@@ -125,7 +125,10 @@ fn update_workspaces(state: &mut HyprlandState) -> Option<CoordinatorMessage> {
         .iter()
         .map(|(_, monitor)| WorkspaceMessage {
             id: monitor.active_workspace.id.to_string(),
-            focused: monitor.focused,
+            focused: match &state.focused_monitor {
+                Some(fmon) => fmon == &monitor.name,
+                None => false,
+            },
             xpos: monitor.x,
         })
         .collect();
