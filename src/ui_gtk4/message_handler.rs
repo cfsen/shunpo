@@ -5,7 +5,7 @@ use gtk4::{
     ListBoxRow
 };
 use gtk4_layer_shell::{KeyboardMode, Layer, LayerShell};
-use log::{info, warn};
+use log::info;
 
 use crate::coordinator::types::GuiMessage;
 use crate::hyprland::structs::{LayerLevel, MonitorName};
@@ -15,7 +15,6 @@ use crate::ui_gtk4::types::{ShunpoState, ShunpoWidgets, UIMode};
 pub fn handle_ui_message(msg: GuiMessage, widgets: &ShunpoWidgets, state: &mut ShunpoState) {
     match msg {
         GuiMessage::UpdateWorkspace(workspaces) => {
-            info!("gtk received update workspace message");
             // clear existing
             while let Some(child) = widgets.workspaces.first_child() {
                 widgets.workspaces.remove(&child);
