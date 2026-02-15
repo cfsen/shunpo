@@ -1,7 +1,7 @@
 use anyhow::{Context, Result};
 use log::{error, info};
-use std::{fs, io::Write, os::unix::net::UnixStream, path::Path};
-use tokio::{io::AsyncReadExt, net::UnixListener, sync::mpsc::{self, UnboundedSender}};
+use std::{fs, io::Write, path::Path};
+use tokio::{io::AsyncReadExt, net::UnixListener, sync::mpsc};
 
 use crate::coordinator::types::{CoordinatorMessage, ShunpoSocketEventData};
 
