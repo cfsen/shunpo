@@ -4,6 +4,7 @@ use crate::{coordinator::types::WorkspaceMessage, search::entity_model::Launcher
 
 pub struct ShunpoWidgets {
     pub window: ApplicationWindow,
+    #[allow(dead_code)]
     pub clock: Label,
     pub workspaces: gtk4::Box,
     pub volume: Scale,
