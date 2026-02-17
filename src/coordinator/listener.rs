@@ -1,6 +1,5 @@
-use anyhow::{anyhow, Context, Result};
-use gtk4::glib;
-use log::{debug, error, info, warn};
+use anyhow::{anyhow, Result};
+use log::{error, info};
 use tokio::sync::mpsc;
 
 use crate::{coordinator::{error::CoordinatorError, types::{
