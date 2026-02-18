@@ -1,5 +1,5 @@
 use gtk4::{
-    gdk, prelude::*, Application, ApplicationWindow, Box, CssProvider, Orientation, StyleContext
+    gdk, prelude::*, Application, ApplicationWindow, Box, CssProvider, Orientation
 };
 use gtk4_layer_shell::{
     Edge,
