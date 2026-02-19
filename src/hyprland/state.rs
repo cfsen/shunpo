@@ -1,6 +1,6 @@
 use std::{cmp::Reverse, collections::HashMap};
 
-use log::{error, info};
+use log::error;
 
 use crate::{config::config::ShunpoConfig, hyprland::{
     error::HyprError,
