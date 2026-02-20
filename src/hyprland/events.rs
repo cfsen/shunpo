@@ -4,7 +4,7 @@ use tokio::{
     net::UnixStream,
     sync::mpsc::UnboundedSender,
 };
-use log::{debug, error, info, warn};
+use log::{error, info};
 
 use crate::{config::config::ShunpoConfig, coordinator::types::{CoordinatorMessage, GuiMessage, HyprlandEventData, WorkspaceMessage}, hyprland::{event_parser::HyprlandEvent, state::HyprlandState, structs::{FullscreenEvent, LayerLevel, MonitorName, Namespace, WorkspaceId}}};
 
