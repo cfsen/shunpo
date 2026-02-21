@@ -1,5 +1,5 @@
 use freedesktop_desktop_entry::Locale;
-use log::{debug, error, info};
+use log::{debug, error};
 use std::ffi::OsStr;
 use std::{env, fs, path::PathBuf};
 use std::os::unix::fs::PermissionsExt;
