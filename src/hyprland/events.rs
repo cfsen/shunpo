@@ -108,7 +108,12 @@ fn check_and_retarget(state: &mut HyprlandState) -> Option<CoordinatorMessage> {
 
     match state.shunpo_get_target() {
         Ok((target_monitor, target_layer)) => {
-            return Some(package_gui_message(target_monitor, target_layer))
+            return Some(package_gui_message(
+                GuiMessage::WaylandMonitorLayer {
+                    target_monitor: target_monitor.clone(),
+                    target_layer
+                })
+            )
         },
         Err(e) => {
             error!("shunpo_get_target failed: {}", e);
@@ -134,16 +139,8 @@ fn update_workspaces(state: &mut HyprlandState) -> Option<CoordinatorMessage> {
         .collect();
     msg.sort_by_key(|ws| ws.xpos);
 
-    Some(CoordinatorMessage::HyprlandEvent(HyprlandEventData {
-            gui_msg: GuiMessage::UpdateWorkspace(msg),
-        }))
+    Some(package_gui_message(GuiMessage::UpdateWorkspace(msg)))
 }
-// TODO: refactor to take GuiMessage
-fn package_gui_message(target_monitor: &MonitorName, target_layer: LayerLevel) -> CoordinatorMessage {
-    CoordinatorMessage::HyprlandEvent(HyprlandEventData {
-        gui_msg: GuiMessage::WaylandMonitorLayer {
-            target_monitor: target_monitor.clone(),
-            target_layer,
-        }
-    })
+fn package_gui_message(gui_msg: GuiMessage) -> CoordinatorMessage {
+    CoordinatorMessage::HyprlandEvent(HyprlandEventData { gui_msg })
 }
