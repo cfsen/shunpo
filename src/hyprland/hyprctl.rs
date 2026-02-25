@@ -1,60 +1,56 @@
 #![allow(dead_code)]
 
-use anyhow::{anyhow, Context, Result};
 use log::{error, info};
 use serde::de::DeserializeOwned;
 use std::{env, process::Command};
 
-use crate::hyprland::structs::{Client, Layers, Monitor, Workspace};
+use crate::hyprland::{error::HyprError, structs::{Client, Layers, Monitor, Workspace}};
 
 /// Execute a hyprctl command and return the output
-pub fn hyprctl(args: &[&str]) -> Result<String> {
+pub fn hyprctl(args: &[&str]) -> Result<String, HyprError> {
     let output = Command::new("hyprctl")
         .env_remove("GSK_RENDERER") // TODO: TODO_PRESERVE_ENV
         .args(args)
         .arg("-j") // JSON output
         .output()
-        .context("Failed to execute hyprctl")?;
+        .map_err(|e| HyprError::HyprCtlExec(e.to_string()))?;
 
-    if !output.status.success() {
-        anyhow::bail!("hyprctl command failed");
-    }
-
-    String::from_utf8(output.stdout).context("Invalid UTF-8 in hyprctl output")
+    String::from_utf8(output.stdout)
+        .map_err(|e| HyprError::HyprCtlExecDecode(e.to_string()))
 }
 
 /// Get all workspaces
-pub fn get_workspaces() -> Result<Vec<Workspace>> {
+pub fn get_workspaces() -> Result<Vec<Workspace>, HyprError> {
     let output = hyprctl(&["workspaces"])?;
     from_json_or_panic(&output, "get_workspaces")
 }
 
 /// Get all clients (windows)
-pub fn get_clients() -> Result<Vec<Client>> {
+pub fn get_clients() -> Result<Vec<Client>, HyprError> {
     let output = hyprctl(&["clients"])?;
     from_json_or_panic(&output, "get_clients")
 }
 
 /// Get all monitors
-pub fn get_monitors() -> Result<Vec<Monitor>> {
+    pub fn get_monitors() -> Result<Vec<Monitor>, HyprError> {
     let output = hyprctl(&["monitors"])?;
     from_json_or_panic(&output, "get_monitors")
 }
 
 /// Get all layers
-pub fn get_layers() -> Result<Layers> {
+pub fn get_layers() -> Result<Layers, HyprError> {
     let output = hyprctl(&["layers"])?;
     from_json_or_panic(&output, "get_layers")
 }
 
 /// Dispatch a Hyprland command
-pub fn dispatch(cmd: &str) -> Result<()> {
+pub fn dispatch(cmd: &str) -> Result<(), HyprError> {
     hyprctl(&["dispatch", "exec", cmd])?;
     Ok(())
 }
 
 /// Dispatch a terminal
-pub fn dispatch_from_term(bin: &str) -> Result<()> {
+pub fn dispatch_from_term(bin: &str) -> Result<(), HyprError> {
     // TODO: TODO_PRESERVE_ENV
     if let Ok(term) = env::var("TERM_PROGRAM") {
         info!("Dispatching: {}", bin);
@@ -63,12 +59,12 @@ pub fn dispatch_from_term(bin: &str) -> Result<()> {
     }
     else {
         error!("Failed to fetch environment variable: TERM_PROGRAM");
-        Err(anyhow!("Failed to fetch environment variable: TERM_PROGRAM"))
+        Err(HyprError::HyprCtlDispatchTerm)
     }
 }
 
 /// Toggle floating for a client
-pub fn toggle_floating_by_initialtitle(initial_title: &str) -> Result<()> {
+pub fn toggle_floating_by_initialtitle(initial_title: &str) -> Result<(), HyprError> {
     hyprctl(&["dispatch", "togglefloating",
         &format!("initialtitle:{}", initial_title)]
     )?;
@@ -76,7 +72,7 @@ pub fn toggle_floating_by_initialtitle(initial_title: &str) -> Result<()> {
 }
 
 /// Resize a client
-pub fn resize_client_by_initialtitle(initial_title: &str, width: u16, height: u16) -> Result<()> {
+pub fn resize_client_by_initialtitle(initial_title: &str, width: u16, height: u16) -> Result<(), HyprError> {
     hyprctl(&["dispatch", "resizewindowpixel", "exact",
         &width.to_string(),
         &height.to_string(),
@@ -86,7 +82,7 @@ pub fn resize_client_by_initialtitle(initial_title: &str, width: u16, height: u1
 }
 
 /// Move a client
-pub fn move_client_by_initialtitle(initial_title: &str, width: u16, height: u16) -> Result<()> {
+pub fn move_client_by_initialtitle(initial_title: &str, width: u16, height: u16) -> Result<(), HyprError> {
     hyprctl(&["dispatch", "movewindowpixel", "exact",
         &width.to_string(),
         &height.to_string(),
@@ -124,10 +120,10 @@ pub fn is_client_visible(client_name: &str) -> bool {
 }
 
 /// Helper for debugging, if Hyprland updates change the JSON schema
-pub fn from_json_or_panic<T: DeserializeOwned>(input: &str, context: &str) -> Result<T> {
+pub fn from_json_or_panic<T: DeserializeOwned>(input: &str, context: &str) -> Result<T, HyprError> {
     match serde_json::from_str::<T>(input) {
         Ok(v) => Ok(v),
-        Err(err) => panic!(
+        Err(err) => panic!( // TODO: fail gracefully
             "Failed to parse {}:\n{}\n\n--- RAW OUTPUT BEGIN ---\n{}\n--- RAW OUTPUT END ---",
             context,
             err,

@@ -1,10 +1,9 @@
-use anyhow::{anyhow, Result};
 use log::{error, info};
 use tokio::sync::mpsc;
 
 use crate::{coordinator::{error::CoordinatorError, types::{
     CoordinatorMessage, FeedbackData, GuiMessage, HyprlandEventData, RipgrepResultData, SearchMessageData, ShunpoSocketEventData
-}}, hyprland::hyprctl::{dispatch, dispatch_from_term}, search::entity_model::Dispatcher};
+}}, hyprland::{error::HyprError, hyprctl::{dispatch, dispatch_from_term}}, search::entity_model::Dispatcher};
 
 pub async fn coordinator_run(
     hyprland_rx: mpsc::UnboundedReceiver<CoordinatorMessage>,
@@ -110,7 +109,7 @@ async fn handle_feedback(
                 Dispatcher::Shell => { dispatch_from_term(&cmd) },
                 Dispatcher::Hyprctl => { dispatch(&cmd) },
                 _ => {
-                    Err(anyhow!("Custom dispatchers not implemented."))
+                    Err(HyprError::HyprCtlDispatchFailure)
                 },
             };
             match dispatch {
