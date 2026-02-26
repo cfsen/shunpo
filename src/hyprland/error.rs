@@ -7,6 +7,9 @@ pub enum HyprError {
     HyprCtlFetchLayers,
     HyprCtlFetchMonitors,
     HyprCtlFetchWorkspaces,
+    HyprlandSocket(String),
+    HyprlandSocketListen(String),
+    InstanceSignatureNotSet(String),
     MonitorIdNotFound,
     ParseIntError,
     ShunpoInvariantAllFullscreen,
@@ -14,6 +17,7 @@ pub enum HyprError {
     ShunpoNotFound,
     ShunpoTargetNoSolution,
     WorkspaceIdNotFound,
+    XdgRuntimeDir(String),
 
     #[deprecated(note = "Replace with a specific error variant")]
     Unspecified,
@@ -29,6 +33,9 @@ impl std::fmt::Display for HyprError {
             HyprError::HyprCtlFetchLayers => write!(f, "HyprCtlFetchLayers"),
             HyprError::HyprCtlFetchMonitors => write!(f, "HyprCtlFetchMonitors"),
             HyprError::HyprCtlFetchWorkspaces => write!(f, "HyprCtlFetchWorkspaces"),
+            HyprError::HyprlandSocket(e) => write!(f, "HyprlandSocket: {}", e),
+            HyprError::HyprlandSocketListen(e) => write!(f, "HyprlandSocketListen: {}", e),
+            HyprError::InstanceSignatureNotSet(e) => write!(f, "HYPRLAND_INSTANCE_SIGNATURE not set {}", e),
             HyprError::MonitorIdNotFound => write!(f, "MonitorIdNotFound"),
             HyprError::ParseIntError => write!(f, "ParseIntError"),
             HyprError::ShunpoInvariantAllFullscreen => write!(f, "ShunpoInvariantAllFullscreen"),
@@ -36,6 +43,7 @@ impl std::fmt::Display for HyprError {
             HyprError::ShunpoNotFound => write!(f, "ShunpoNotFound"),
             HyprError::ShunpoTargetNoSolution => write!(f, "ShunpoTargetNoSolution"),
             HyprError::WorkspaceIdNotFound => write!(f, "WorkspaceIdNotFound"),
+            HyprError::XdgRuntimeDir(e) => write!(f, "XdgRuntimeDir: Unable to open socket: {}", e),
 
             #[allow(deprecated)]
             HyprError::Unspecified => write!(f, "Unspecified"),
