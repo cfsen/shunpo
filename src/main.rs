@@ -54,7 +54,7 @@ fn main() -> ExitCode {
     let cfg_hypr_events = config.clone();
     runtime().spawn(async move {
         if let Err(e) = hyprland::events::subscribe_events(event_tx, cfg_hypr_events).await {
-            error!("Error in Hyprland listener: {:?}", e);
+            error!("Error in Hyprland listener: {}", e);
         }
     });
 

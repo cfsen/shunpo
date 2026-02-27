@@ -1,4 +1,3 @@
-use anyhow::{Context, Result};
 use tokio::{
     io::{AsyncBufReadExt, BufReader},
     net::UnixStream,
@@ -6,23 +5,23 @@ use tokio::{
 };
 use log::{error, info};
 
-use crate::{config::config::ShunpoConfig, coordinator::types::{CoordinatorMessage, GuiMessage, HyprlandEventData, WorkspaceMessage}, hyprland::{event_parser::HyprlandEvent, state::HyprlandState, structs::{FullscreenEvent, LayerLevel, MonitorName, Namespace, WorkspaceId}}};
+use crate::{config::config::ShunpoConfig, coordinator::types::{CoordinatorMessage, GuiMessage, HyprlandEventData, WorkspaceMessage}, hyprland::{error::HyprError, event_parser::HyprlandEvent, state::HyprlandState, structs::{FullscreenEvent, LayerLevel, MonitorName, Namespace, WorkspaceId}}};
 
 /// Subscribe to Hyprland events
 pub async fn subscribe_events(
     tx: UnboundedSender<CoordinatorMessage>,
     config: ShunpoConfig
-) -> Result<()> {
+) -> Result<(), HyprError> {
     // get env vars
     let signature = std::env::var("HYPRLAND_INSTANCE_SIGNATURE")
-        .context("HYPRLAND_INSTANCE_SIGNATURE not set")?;
+        .map_err(|e| HyprError::InstanceSignatureNotSet(e.to_string()))?;
     let xdg_runtime_path = std::env::var("XDG_RUNTIME_DIR")
-        .context("Unable to open socket")?;
+        .map_err(|e| HyprError::XdgRuntimeDir(e.to_string()))?;
     let socket_path = format!("{}/hypr/{}/.socket2.sock", xdg_runtime_path, signature);
 
     let stream = UnixStream::connect(&socket_path)
         .await
-        .context("Failed to connect to Hyprland event socket")?;
+        .map_err(|e| HyprError::HyprlandSocket(e.to_string()))?;
 
     let reader = BufReader::new(stream);
     let mut lines = reader.lines();
@@ -32,7 +31,9 @@ pub async fn subscribe_events(
 
     info!("Listening for Hyprland events...");
 
-    while let Some(line) = lines.next_line().await? {
+    while let Some(line) = lines
+        .next_line().await
+        .map_err(|e| HyprError::HyprlandSocketListen(e.to_string()))? {
         if let Ok(event) = HyprlandEvent::parse_event(&line) {
             if let Some(gui_msg) = update_state(&mut state, event) {
                 info!("msg: event listener->coordinator");
