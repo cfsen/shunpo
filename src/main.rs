@@ -6,6 +6,7 @@ mod coordinator;
 mod hyprland;
 mod search;
 mod socket;
+mod socket_error;
 mod system;
 mod ui_gtk4;
 
