@@ -1,18 +1,19 @@
-use anyhow::{Context, Result};
-use log::{error, info};
+use log::{info};
 use std::{fs, io::Write, path::Path};
 use tokio::{io::AsyncReadExt, net::UnixListener, sync::mpsc};
 
-use crate::coordinator::types::{CoordinatorMessage, ShunpoSocketEventData};
+use crate::{
+    coordinator::types::{CoordinatorMessage, ShunpoSocketEventData}, socket_error::ShunpoSocketError,
+};
 
 struct ShunpoSocketPath {
     addr: String,
     dir: String,
 }
 
-fn get_shunpo_socket_path() -> Result<ShunpoSocketPath> {
+fn get_shunpo_socket_path() -> Result<ShunpoSocketPath, ShunpoSocketError> {
     let xdg_runtime_dir = std::env::var("XDG_RUNTIME_DIR")
-        .context("Failed reading env: XDG_RUNTIME_DIR.")?;
+        .map_err(|e| ShunpoSocketError::XdgRuntimeDir(e))?;
 
     let dir = format!("{}/shunpo", xdg_runtime_dir);
     let addr = format!("{}/.shunpo.sock", dir);
@@ -24,16 +25,20 @@ fn get_shunpo_socket_path() -> Result<ShunpoSocketPath> {
     })
 }
 
-pub fn shunpo_socket(shunpo_tx: mpsc::UnboundedSender<CoordinatorMessage>) -> Result<()> {
+pub fn shunpo_socket(
+    shunpo_tx: mpsc::UnboundedSender<CoordinatorMessage>
+) -> Result<(), ShunpoSocketError> {
     let socket = get_shunpo_socket_path()?;
 
     // setup and cleanup
-    fs::create_dir_all(&socket.dir)?;
+    fs::create_dir_all(&socket.dir)
+        .map_err(|e| ShunpoSocketError::SocketCreateDir(e))?;
+
     let _ = fs::remove_file(&socket.addr);
 
     // setup socket
     let listener = UnixListener::bind(&socket.addr)
-        .context("Failed to bind socket")?;
+        .map_err(|e| ShunpoSocketError::SocketBind(e))?;
 
     // run listener
     tokio::spawn(async move {
@@ -67,19 +72,23 @@ async fn socket_listener(listener: UnixListener, shunpo_tx: mpsc::UnboundedSende
     }
 }
 
-pub fn send_wakeup() -> Result<()> {
+pub fn send_wakeup() -> Result<(), ShunpoSocketError> {
     let socket = get_shunpo_socket_path()?;
 
     if !Path::new(&socket.addr).exists() {
-        error!("Lock held but no socket found.");
-        return Err(anyhow::anyhow!("Try running Shunpo again."))
+        return Err(ShunpoSocketError::LockHeldNoSocket)
     }
 
     // attempt to send wakeup to socket
     let mut stream = std::os::unix::net::UnixStream::connect(&socket.addr)
-        .context("Failed to connect to existing instance")?;
-    stream.write_all(b"wakeup")?;
-    stream.flush()?;
+        .map_err(|e| ShunpoSocketError::StreamOpen(e))?;
+
+    stream.write_all(b"wakeup")
+        .map_err(|e| ShunpoSocketError::StreamWrite(e))?;
+
+    stream.flush()
+        .map_err(|e| ShunpoSocketError::StreamFlush(e))?;
+
     info!("Sent wakeup message to running instance");
     Ok(())
 }
