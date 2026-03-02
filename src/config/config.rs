@@ -11,6 +11,7 @@ pub struct ShunpoConfig {
     pub version: String,
     pub monitor_priority: Vec<MonitorName>,
     pub terminal_path: String,
+    pub desktop_entries_paths: Vec<String>,
 }
 
 impl ShunpoConfig {
@@ -41,11 +42,13 @@ impl ShunpoConfig {
         let terminal_path = Self::collect_terminals()?;
         let monitor_priority = Self::collect_monitors()?;
         let version = env!("CARGO_PKG_VERSION").to_string();
+        let desktop_entries_paths = Vec::<String>::new();
 
         let config = ShunpoConfig {
             version,
             monitor_priority,
             terminal_path,
+            desktop_entries_paths,
         };
 
         config.save_config()?;
