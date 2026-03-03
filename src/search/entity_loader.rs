@@ -1,4 +1,3 @@
-use freedesktop_desktop_entry::Locale;
 use log::{debug, error};
 use std::ffi::OsStr;
 use std::{env, fs, path::PathBuf};
@@ -33,15 +32,16 @@ pub fn scan_path_executables() -> Vec<ExecutableEntity> {
     executables
 }
 
-pub fn scan_desktop_executables() -> Vec<ExecutableEntity> {
-    let locale = std::env::var("LANG")
-        .ok()
-        .and_then(|lang| lang.split('.').next().map(String::from))
-        .and_then(|lang| lang.parse::<Locale>().ok())
-        .unwrap_or_else(|| "en-US".parse().unwrap());
-    let locales = vec![locale];  // owned vec
+pub fn scan_desktop_executables(extra: Vec<PathBuf>) -> Vec<ExecutableEntity> {
+    let locales = freedesktop_desktop_entry::get_languages_from_env();
 
-    let entries = freedesktop_desktop_entry::desktop_entries(locales.as_slice());
+    let desktop_paths = freedesktop_desktop_entry::default_paths()
+        .chain(extra.into_iter());
+
+    let entries = freedesktop_desktop_entry::Iter::new(desktop_paths)
+        .entries(Some(&locales))
+        .collect::<Vec<_>>();
+
     let mut executables = Vec::new();
 
     for entry in entries {

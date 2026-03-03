@@ -1,6 +1,6 @@
 use std::path::PathBuf;
 
-use crate::search::{entity_loader::{scan_desktop_executables, scan_path_executables}, entity_model::{ExecutableEntity, FileEntity, RipgrepEntity}};
+use crate::{config::config::ShunpoConfig, search::{entity_loader::{scan_desktop_executables, scan_path_executables}, entity_model::{ExecutableEntity, FileEntity, RipgrepEntity}}};
 
 pub struct EntityRepository {
     pub exec_desktop: Vec<ExecutableEntity>,
@@ -30,7 +30,7 @@ impl EntityRepository {
         self.documents.clear();
         self.generic_executables.clear();
 
-        self.exec_desktop = scan_desktop_executables();
+        self.exec_desktop = scan_desktop_executables(self.config.exec_paths.clone());
         self.executables = scan_path_executables();
         self.generic_executables = EntityRepository::build_generic_executables(&self.executables);
         self.generic_exec_desktop = EntityRepository::build_generic_executables(&self.exec_desktop);
@@ -78,4 +78,21 @@ impl EntityRepository {
 pub struct RepositoryConfig {
     pub exec_paths: Vec<PathBuf>,
     pub rg_paths: Vec<PathBuf>,
+}
+impl RepositoryConfig {
+    pub fn from_shunpo_config(config: &ShunpoConfig) -> RepositoryConfig {
+        let exec_paths = Self::get_valid_paths(&config.desktop_entries_paths);
+        let rg_paths = Vec::<PathBuf>::new(); // TODO: ripgrep impl
+
+        RepositoryConfig {
+            exec_paths,
+            rg_paths,
+        }
+    }
+    fn get_valid_paths(paths: &[String]) -> Vec<PathBuf> {
+        paths.iter()
+            .map(|p| PathBuf::from(p))
+            .filter(|p| p.exists())
+            .collect()
+    }
 }

@@ -64,7 +64,7 @@ fn main() -> ExitCode {
     // anywhere to search
     let (search_tx, search_rx) = mpsc::unbounded_channel::<String>();
     // setup search
-    let _search_worker = setup_search_listener(search_rx, search_coord_tx);
+    let _search_worker = setup_search_listener(search_rx, search_coord_tx, config.clone());
 
     // coordinator to gui
     let (gui_tx, gui_rx) = async_channel::unbounded::<GuiMessage>();

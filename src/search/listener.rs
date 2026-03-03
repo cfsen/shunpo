@@ -3,36 +3,34 @@ use tokio::sync::mpsc;
 use nucleo;
 
 use crate::{
-    coordinator::types::{
+    config::config::ShunpoConfig, coordinator::types::{
         CoordinatorMessage,
         SearchMessageData
-    },
-    search::{
+    }, search::{
         entity_model::FileEntity,
         entity_repository::{EntityRepository, RepositoryConfig},
         matcher_helpers::search_entity
-    },
+    }
 };
 
 pub fn setup_search_listener(
     search_rx: mpsc::UnboundedReceiver<String>,
-    search_coord_tx: mpsc::UnboundedSender<CoordinatorMessage>
+    search_coord_tx: mpsc::UnboundedSender<CoordinatorMessage>,
+    config: ShunpoConfig
 ){
     tokio::spawn(async {
-        search_listener(search_rx, search_coord_tx).await;
+        search_listener(search_rx, search_coord_tx, config).await;
     });
 }
 async fn search_listener(
     mut search_rx: mpsc::UnboundedReceiver<String>,
-    search_coord_tx: mpsc::UnboundedSender<CoordinatorMessage>
+    search_coord_tx: mpsc::UnboundedSender<CoordinatorMessage>,
+    config: ShunpoConfig
 ){
     let mut matcher = nucleo::Matcher::new(nucleo::Config::DEFAULT);
 
-    // TODO: populate custom paths
-    let repo_config = RepositoryConfig {
-        exec_paths: Vec::new(),
-        rg_paths: Vec::new(),
-    };
+    let repo_config = RepositoryConfig::from_shunpo_config(&config);
+
     let mut entity_repo = EntityRepository::new(repo_config);
     entity_repo.populate();
     let mut haystack: &Vec<FileEntity>;
