@@ -59,6 +59,7 @@ impl LauncherEntity {
 pub struct ExecutableEntity {
     pub dispatcher: Dispatcher,
     pub match_name: Utf32String,
+    #[allow(dead_code)] // TODO: pending impl of weight-by-use results
     pub match_rank: Option<u16>,
     pub path: PathBuf,
     pub ui_name: String,
@@ -81,6 +82,7 @@ pub enum ExecutableSource {
 pub struct RipgrepEntity {
     pub dispatcher: Dispatcher,
     pub match_name: Utf32String,
+    #[allow(dead_code)] // TODO: pending impl of weight-by-use results
     pub match_rank: Option<u16>,
     pub path: PathBuf,
     pub ui_name: String,
