@@ -81,8 +81,13 @@ pub fn search_controller(
     search_controller.connect_key_released({
         move |_, key, _code, modifier| {
             if modifier.contains(ModifierType::CONTROL_MASK) && key == Key::w {
-                // TODO: remove until first left whitespace
-                search.set_text("");
+                match search.text().rsplit_once(" ") {
+                    Some((head, _tail)) => { 
+                        search.set_text(head);
+                        search.set_position(-1);
+                    },
+                    None => { search.set_text("");},
+                }
             }
 
             if key != Key::Return {
