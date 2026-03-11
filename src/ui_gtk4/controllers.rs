@@ -44,6 +44,10 @@ pub fn window_controller(
                 FeedbackData::GuiMessagePassthrough(GuiMessage::Sleep)
             ));
         }
+        // prevent focus loss of search field
+        if key == Key::Up || key == Key::Down || key == Key::Tab {
+            return gtk4::glib::Propagation::Stop;
+        }
         gtk4::glib::Propagation::Proceed
     });
 
