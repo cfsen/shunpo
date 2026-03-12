@@ -1,47 +1,28 @@
-use gtk4::gdk::{
-    Key,
-    ModifierType
-};
-use gtk4::{
-    Entry,
-    EventControllerKey,
-    ListBox,
-
-    prelude::*,
-};
-use log::{
-    error,
-    info
-};
+use gtk4::gdk::{Key, ModifierType};
+use gtk4::{prelude::*, Entry, EventControllerKey, ListBox};
+use log::{error, info};
 use std::cell::RefCell;
 use std::rc::Rc;
 use tokio::sync::mpsc;
 
 use crate::coordinator::types::GuiMessage;
 use crate::{
-    coordinator::types::{
-        CoordinatorMessage,
-        FeedbackData,
-    },
+    coordinator::types::{CoordinatorMessage, FeedbackData},
     search::entity_model::LauncherEntity,
-    ui_gtk4::{
-        types::ShunpoState,
-        helpers::result_data_from_idx,
-    },
+    ui_gtk4::{helpers::result_data_from_idx, types::ShunpoState},
 };
 
-
 pub fn window_controller(
-    feedback_tx: mpsc::UnboundedSender<CoordinatorMessage>
+    feedback_tx: mpsc::UnboundedSender<CoordinatorMessage>,
 ) -> EventControllerKey {
     let controller = EventControllerKey::new();
     controller.connect_key_pressed(move |_, key, _, _| {
         // hide or quit on escape
         if key == Key::Escape {
-            // TODO: allow exit behavior with config 
+            // TODO: allow exit behavior with config
             // std::process::exit(0);
             let _ = feedback_tx.send(CoordinatorMessage::Feedback(
-                FeedbackData::GuiMessagePassthrough(GuiMessage::Sleep)
+                FeedbackData::GuiMessagePassthrough(GuiMessage::Sleep),
             ));
         }
         // prevent focus loss of search field
@@ -71,8 +52,10 @@ pub fn search_controller(
                     let cur = if key == Key::n { 1 } else { -1 };
 
                     if let Some(target_row_idx) = results.row_at_index(
-                        results.selected_row().map_or_else(|| 0, |row| row.index()+cur)
-                    ){
+                        results
+                            .selected_row()
+                            .map_or_else(|| 0, |row| row.index() + cur),
+                    ) {
                         results.select_row(Some(&target_row_idx));
                     }
                     return gtk4::glib::Propagation::Stop;
@@ -102,7 +85,7 @@ pub fn search_controller(
 
             if text.is_empty() {
                 let _ = feedback_tx.send(CoordinatorMessage::Feedback(
-                    FeedbackData::GuiMessagePassthrough(GuiMessage::Sleep)
+                    FeedbackData::GuiMessagePassthrough(GuiMessage::Sleep),
                 ));
                 return;
             }
@@ -111,7 +94,7 @@ pub fn search_controller(
             }
             else if text == ":deepsleep" {
                 let _ = feedback_tx.send(CoordinatorMessage::Feedback(
-                    FeedbackData::GuiMessagePassthrough(GuiMessage::DeepSleep)
+                    FeedbackData::GuiMessagePassthrough(GuiMessage::DeepSleep),
                 ));
                 return;
             }
@@ -126,9 +109,7 @@ pub fn search_controller(
                 info!("name: {}", data.alias);
                 info!("command: {:?}", data.command);
                 info!("dispatcher: {:?}", data.dispatcher);
-                let _ = feedback_tx.send(CoordinatorMessage::Feedback(
-                    FeedbackData::Run(data)
-                ));
+                let _ = feedback_tx.send(CoordinatorMessage::Feedback(FeedbackData::Run(data)));
             }
             else {
                 error!("Failed to match listbox to state!");
