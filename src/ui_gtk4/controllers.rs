@@ -67,13 +67,28 @@ pub fn search_controller(
 
     search_controller.connect_key_released({
         move |_, key, _code, modifier| {
-            if modifier.contains(ModifierType::CONTROL_MASK) && key == Key::w {
-                match search.text().rsplit_once(" ") {
-                    Some((head, _tail)) => { 
-                        search.set_text(head);
+            if modifier.contains(ModifierType::CONTROL_MASK) {
+                match key {
+                    Key::w => { // delete one word
+                        match search.text().rsplit_once(" ") {
+                            Some((head, _tail)) => {
+                                search.set_text(head);
+                                search.set_position(-1);
+                            }
+                            None => {
+                                search.set_text("");
+                            }
+                        }
+                    },
+                    Key::e => { // move caret to end
                         search.set_position(-1);
                     },
-                    None => { search.set_text("");},
+                    Key::a => { // move caret to beginning
+                        search.set_position(0);
+                    }
+                    _ => {},
+                }
+            }
                 }
             }
 
