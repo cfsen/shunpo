@@ -89,6 +89,26 @@ pub fn search_controller(
                     _ => {},
                 }
             }
+            else if modifier.contains(ModifierType::ALT_MASK) {
+                let caret = search.position() as usize;
+                match key {
+                    Key::b => { // back 1 word
+                        let term: String = search.text().chars().take(caret).collect();
+                        let position = match term.rfind(" ") {
+                            Some(p) => p,
+                            None => caret,
+                        } as i32;
+                        search.set_position(position);
+                    },
+                    Key::f => { // forward 1 word
+                        let term: String = search.text().chars().skip(caret).collect();
+                        let position = match term.find(" ") {
+                            Some(p) => caret + p + 1,
+                            None => caret,
+                        } as i32;
+                        search.set_position(position);
+                    },
+                    _ => {}
                 }
             }
 
