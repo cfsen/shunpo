@@ -130,7 +130,7 @@ fn ui_mode_from_gui_message(msg: GuiMessage, widgets: &ShunpoWidgets, state: &mu
             }
         },
         GuiMessage::UpdateWorkspace(_)=> {
-            panic!("UI workspace invariatn: GuiMessage::UpdateWorkspace should have been caught earlier.");
+            panic!("UI workspace invariant: GuiMessage::UpdateWorkspace should have been caught earlier.");
         },
         GuiMessage::ToggleUiMode => {
             panic!("UI mode switch invariant: GuiMessage::ToggleUiMode should have been translated.");
