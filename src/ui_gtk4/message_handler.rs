@@ -9,6 +9,7 @@ use log::info;
 
 use crate::coordinator::types::GuiMessage;
 use crate::hyprland::structs::{LayerLevel, MonitorName};
+use crate::system;
 use crate::ui_gtk4::errors::ShunpoGtk4Error;
 use crate::ui_gtk4::types::{ShunpoState, ShunpoWidgets, UIMode};
 
@@ -149,6 +150,9 @@ fn ui_mode_from_gui_message(msg: GuiMessage, widgets: &ShunpoWidgets, state: &mu
         GuiMessage::Wake => {
             widgets.search.grab_focus();
             widgets.search.set_text(""); // clear previous search
+            if let Ok(vol) = system::volume::get_volume() { // update volume controller
+                widgets.volume.set_value(vol.into());
+            }
         },
         _ => {},
     }
