@@ -5,7 +5,7 @@ use tokio::{
 };
 use log::{error, info};
 
-use crate::{config::config::ShunpoConfig, coordinator::types::{CoordinatorMessage, GuiMessage, HyprlandEventData, WorkspaceMessage}, hyprland::{error::HyprError, event_parser::HyprlandEvent, state::HyprlandState, structs::{FullscreenEvent, LayerLevel, MonitorName, Namespace, WorkspaceId}}};
+use crate::{config::config::ShunpoConfig, coordinator::types::{CoordinatorMessage, GuiMessage, HyprlandEventData, WorkspaceMessage}, hyprland::{error::HyprError, event_parser::HyprlandEvent, state::HyprlandState}};
 
 /// Subscribe to Hyprland events
 pub async fn subscribe_events(
