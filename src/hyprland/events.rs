@@ -34,19 +34,20 @@ pub async fn subscribe_events(
     while let Some(line) = lines
         .next_line().await
         .map_err(|e| HyprError::HyprlandSocketListen(e.to_string()))? {
+
         if let Ok(event) = HyprlandEvent::parse_event(&line) {
-            if let Some(gui_msg) = update_state(&mut state, event) {
-                info!("msg: event listener->coordinator");
-                let _ = tx.send(gui_msg);
+            for message in update_state(&mut state, event) {
+                let _ = tx.send(message);
             }
         }
+
     }
 
     info!("Hyprland event listener exiting.");
 
     Ok(())
 }
-fn update_state(state: &mut HyprlandState, event: HyprlandEvent) -> Option<CoordinatorMessage> {
+fn update_state(state: &mut HyprlandState, event: HyprlandEvent) -> Vec<CoordinatorMessage> {
     match event {
         // rebuild state when wayland layers with shunpo namespace are created.
         // occurs on app launch for initial state, and on changes to or from deep sleep mode
@@ -66,8 +67,11 @@ fn update_state(state: &mut HyprlandState, event: HyprlandEvent) -> Option<Coord
             if let Err(e) = state.rebuild() {
                 error!("Workspacev2: Failed to rebuild state: {}", e);
             }
-            return check_and_retarget(state);
-        }
+            let mut ws_update = update_workspaces(state);
+            ws_update.extend(check_and_retarget(state));
+
+            return ws_update;
+        },
         HyprlandEvent::Createworkspacev2 { .. } => {
             if let Err(e) = state.rebuild_workspaces() {
                 error!("Createworkspacev2: Failed to rebuild workspaces: {}", e);
@@ -100,31 +104,31 @@ fn update_state(state: &mut HyprlandState, event: HyprlandEvent) -> Option<Coord
         },
         _ => {},
     }
-    None
+    vec![]
 }
-fn check_and_retarget(state: &mut HyprlandState) -> Option<CoordinatorMessage> {
+fn check_and_retarget(state: &mut HyprlandState) -> Vec<CoordinatorMessage> {
     if !state.shunpo_should_retarget().is_ok_and(|retarget| retarget) {
-        return None;
+        return vec![];
     }
 
     match state.shunpo_get_target() {
         Ok((target_monitor, target_layer)) => {
-            return Some(package_gui_message(
+            return vec![package_gui_message(
                 GuiMessage::WaylandMonitorLayer {
                     target_monitor: target_monitor.clone(),
                     target_layer
                 })
-            )
+            ]
         },
         Err(e) => {
             error!("shunpo_get_target failed: {}", e);
-            None
+            vec![]
         },
     }
 }
-fn update_workspaces(state: &mut HyprlandState) -> Option<CoordinatorMessage> {
+fn update_workspaces(state: &mut HyprlandState) -> Vec<CoordinatorMessage> {
     if state.monitors.len() < 1 {
-        return None;
+        return vec![];
     }
 
     let mut msg: Vec<WorkspaceMessage> = state.monitors
@@ -140,7 +144,7 @@ fn update_workspaces(state: &mut HyprlandState) -> Option<CoordinatorMessage> {
         .collect();
     msg.sort_by_key(|ws| ws.xpos);
 
-    Some(package_gui_message(GuiMessage::UpdateWorkspace(msg)))
+    vec![package_gui_message(GuiMessage::UpdateWorkspace(msg))]
 }
 fn package_gui_message(gui_msg: GuiMessage) -> CoordinatorMessage {
     CoordinatorMessage::HyprlandEvent(HyprlandEventData { gui_msg })
