@@ -7,7 +7,7 @@ use gtk4::{
 use gtk4_layer_shell::{KeyboardMode, Layer, LayerShell};
 use log::info;
 
-use crate::coordinator::types::GuiMessage;
+use crate::coordinator::types::{GuiMessage, SearchMessageData, WorkspaceMessage};
 use crate::hyprland::structs::{LayerLevel, MonitorName};
 use crate::system;
 use crate::ui_gtk4::errors::ShunpoGtk4Error;
@@ -16,60 +16,10 @@ use crate::ui_gtk4::types::{ShunpoState, ShunpoWidgets, UIMode};
 pub fn handle_ui_message(msg: GuiMessage, widgets: &ShunpoWidgets, state: &mut ShunpoState) {
     match msg {
         GuiMessage::UpdateWorkspace(workspaces) => {
-            // clear existing
-            while let Some(child) = widgets.workspaces.first_child() {
-                widgets.workspaces.remove(&child);
-            }
-
-            // update state
-            state.workspaces_data = workspaces.clone();
-
-            // populate new workspace indicators
-            for workspace in workspaces {
-                let ws_box = gtk4::Box::new(Orientation::Horizontal, 0);
-                ws_box.add_css_class(if workspace.focused { "ws-active-bg" } else { "ws-inactive-bg" });
-
-                let label = Label::new(Some(&workspace.id));
-                label.add_css_class("ws-label");
-                ws_box.append(&label);
-
-                widgets.workspaces.append(&ws_box);
-            }
+            update_active_workspace(workspaces, widgets, state);
         },
         GuiMessage::DisplayResults(data) => {
-            // clear existing results
-            while let Some(child) = widgets.results.first_child() {
-                widgets.results.remove(&child);
-            }
-
-            // update state
-            state.results_data = data.results.clone();
-
-            if data.results.len() == 0 {
-                return;
-            }
-
-            // populate new results
-            for entity  in data.results {
-                let row = ListBoxRow::new();
-                let box_ = Box::new(Orientation::Horizontal, 10);
-                box_.set_margin_top(5);
-                box_.set_margin_bottom(5);
-                box_.set_margin_start(10);
-
-                let label = Label::new(Some(&entity.alias.to_string()));
-                box_.append(&label);
-
-                row.set_child(Some(&box_));
-                widgets.results.append(&row);
-            }
-
-            // select first result
-            if let Some(target_row_idx) = widgets.results.row_at_index(
-                widgets.results.selected_row().map_or_else(|| 0, |row| row.index())
-            ){
-                widgets.results.select_row(Some(&target_row_idx));
-            }
+            update_results(data, widgets, state);
         },
         _ => { ui_mode_from_gui_message(msg, widgets, state); },
     }
@@ -168,4 +118,74 @@ fn find_display(target_name: &MonitorName) -> Result<Monitor, ShunpoGtk4Error>  
             let monitor = m.ok()?;
             (monitor.connector()? == gtk4::glib::GString::from(target_name.to_string())).then_some(monitor)
         }).ok_or(ShunpoGtk4Error::FindMonitor)
+}
+
+fn clear_workspaces(widgets: &ShunpoWidgets) {
+    while let Some(child) = widgets.workspaces.first_child() {
+        widgets.workspaces.remove(&child);
+    }
+}
+fn update_active_workspace(
+    workspaces: Vec<WorkspaceMessage>,
+    widgets: &ShunpoWidgets,
+    state: &mut ShunpoState,
+) {
+    clear_workspaces(widgets);
+
+    // update state
+    state.workspaces_data = workspaces.clone();
+
+    // populate new workspace indicators
+    for workspace in workspaces {
+        let ws_box = gtk4::Box::new(Orientation::Horizontal, 0);
+        ws_box.add_css_class(if workspace.focused { "ws-active-bg" } else { "ws-inactive-bg" });
+
+        let label = Label::new(Some(&workspace.id));
+        label.add_css_class("ws-label");
+        ws_box.append(&label);
+
+        widgets.workspaces.append(&ws_box);
+    }
+}
+
+fn clear_results(widgets: &ShunpoWidgets) {
+    while let Some(child) = widgets.results.first_child() {
+        widgets.results.remove(&child);
+    }
+}
+fn update_results(
+    data: SearchMessageData,
+    widgets: &ShunpoWidgets,
+    state: &mut ShunpoState,
+) {
+    clear_results(widgets);
+
+    // update state
+    state.results_data = data.results.clone();
+
+    if data.results.len() == 0 {
+        return;
+    }
+
+    // populate new results
+    for entity  in data.results {
+        let row = ListBoxRow::new();
+        let box_ = Box::new(Orientation::Horizontal, 10);
+        box_.set_margin_top(5);
+        box_.set_margin_bottom(5);
+        box_.set_margin_start(10);
+
+        let label = Label::new(Some(&entity.alias.to_string()));
+        box_.append(&label);
+
+        row.set_child(Some(&box_));
+        widgets.results.append(&row);
+    }
+
+    // select first result
+    if let Some(target_row_idx) = widgets.results.row_at_index(
+        widgets.results.selected_row().map_or_else(|| 0, |row| row.index())
+    ){
+        widgets.results.select_row(Some(&target_row_idx));
+    }
 }
