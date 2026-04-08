@@ -45,7 +45,7 @@ pub struct Workspace {
     pub name: WorkspaceName,
     pub monitor: MonitorName,
     #[serde(rename = "monitorID")]
-    pub monitor_id: MonitorId,
+    pub monitor_id: Option<MonitorId>,
     pub windows: i32,
     #[serde(rename = "hasfullscreen")]
     pub has_fullscreen: bool,
