@@ -7,3 +7,5 @@ pub mod message_handler;
 pub mod types;
 pub mod ui_widgets;
 pub mod updaters;
+
+mod ui_updaters;
