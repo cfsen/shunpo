@@ -78,21 +78,9 @@ fn update_state(state: &mut HyprlandState, event: HyprlandEvent) -> Vec<Coordina
             }
             return update_workspaces(state);
         },
-        HyprlandEvent::Destroyworkspacev2 { wid, .. } => {
-            if let Err(e) = state.remove_workspace(wid) {
-                error!("Destroyworkspacev2: Failed to remove workspace: {}", e);
-            }
-            return update_workspaces(state);
-        },
         HyprlandEvent::Monitoraddedv2 { .. } => {
             if let Err(e) = state.rebuild_monitors() {
                 error!("Monitoraddedv2: Failed to rebuild monitors: {}", e);
-            }
-            return update_workspaces(state);
-        },
-        HyprlandEvent::Monitorremovedv2 { mname, .. } => {
-            if let Err(e) = state.remove_monitor(mname) {
-                error!("Monitorremovedv2: Failed to remove monitor: {}", e);
             }
             return update_workspaces(state);
         },
