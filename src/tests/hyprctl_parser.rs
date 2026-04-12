@@ -84,7 +84,7 @@ fn test_hyprctl_serde_parses_workspaces() {
     assert_eq!(special.id, WorkspaceId::from(-98));
     assert_eq!(special.name, WorkspaceName::from("special:magic"));
     assert_eq!(special.monitor, MonitorName::from("DP-3"));
-    assert_eq!(special.monitor_id, MonitorId::from(1));
+    assert_eq!(special.monitor_id, Some(MonitorId::from(1)));
     assert_eq!(special.windows, 1);
     assert!(!special.has_fullscreen);
     assert_eq!(special.last_window, "0x0123456789ab0");
@@ -96,7 +96,7 @@ fn test_hyprctl_serde_parses_workspaces() {
     assert_eq!(ws4.id, WorkspaceId::from(4));
     assert_eq!(ws4.name, WorkspaceName::from("WorkspaceId=4"));
     assert_eq!(ws4.monitor, MonitorName::from("DP-3"));
-    assert_eq!(ws4.monitor_id, MonitorId::from(1));
+    assert_eq!(ws4.monitor_id, Some(MonitorId::from(1)));
     assert_eq!(ws4.windows, 1);
     assert!(!ws4.has_fullscreen);
     assert_eq!(ws4.last_window, "0x0123456789ab1");
@@ -107,14 +107,14 @@ fn test_hyprctl_serde_parses_workspaces() {
     assert_eq!(ws1.id, WorkspaceId::from(1));
     assert_eq!(ws1.name, WorkspaceName::from("WorkspaceId=1"));
     assert_eq!(ws1.monitor, MonitorName::from("DP-3"));
-    assert_eq!(ws1.monitor_id, MonitorId::from(1));
+    assert_eq!(ws1.monitor_id, Some(MonitorId::from(1)));
 
     // test workspace 5 (on DP-2, multiple windows)
     let ws5 = &workspaces[3];
     assert_eq!(ws5.id, WorkspaceId::from(5));
     assert_eq!(ws5.name, WorkspaceName::from("WorkspaceId=5"));
     assert_eq!(ws5.monitor, MonitorName::from("DP-2"));
-    assert_eq!(ws5.monitor_id, MonitorId::from(0));
+    assert_eq!(ws5.monitor_id, Some(MonitorId::from(0)));
     assert_eq!(ws5.windows, 3, "workspace 5 should have 3 windows");
     assert_eq!(ws5.last_window, "0x0123456789ab3");
 
@@ -130,7 +130,7 @@ fn test_hyprctl_serde_parses_workspaces() {
     assert_eq!(ws2.id, WorkspaceId::from(2));
     assert_eq!(ws2.name, WorkspaceName::from("2"));
     assert_eq!(ws2.monitor, MonitorName::from("DP-3"));
-    assert_eq!(ws2.monitor_id, MonitorId::from(1));
+    assert_eq!(ws2.monitor_id, Some(MonitorId::from(1)));
     assert_eq!(ws2.windows, 3, "workspace 2 should have 3 windows");
     assert!(ws2.has_fullscreen, "workspace 2 should have fullscreen window");
     assert_eq!(ws2.last_window, "0x0123456789ab5");
@@ -141,7 +141,7 @@ fn test_hyprctl_serde_parses_workspaces() {
     assert_eq!(ws6.id, WorkspaceId::from(6));
     assert_eq!(ws6.name, WorkspaceName::from("6"));
     assert_eq!(ws6.monitor, MonitorName::from("DP-2"));
-    assert_eq!(ws6.monitor_id, MonitorId::from(0));
+    assert_eq!(ws6.monitor_id, Some(MonitorId::from(0)));
     assert_eq!(ws6.windows, 1);
     assert!(!ws6.has_fullscreen);
     assert_eq!(ws6.last_window, "0x0123456789ab6");
