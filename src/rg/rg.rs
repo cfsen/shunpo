@@ -145,6 +145,7 @@ pub fn rg_lookup(
                     match_rank: None,
                     path: PathBuf::from(file.data.path.as_string()),
                     ui_name: file.data.path.as_string(),
+                    line: file.data.line_number,
                 }
             );
             results.push(rge.into_launcher_entity());

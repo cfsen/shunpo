@@ -86,6 +86,8 @@ pub struct RipgrepEntity {
     pub match_rank: Option<u16>,
     pub path: PathBuf,
     pub ui_name: String,
+
+    pub line: i32,
 }
 
 //
