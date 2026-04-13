@@ -1,6 +1,7 @@
 use std::path::PathBuf;
 use nucleo::Utf32String;
 
+#[derive(Clone)]
 pub enum FileEntity {
     Executable(ExecutableEntity),
     Ripgrep(RipgrepEntity),
@@ -29,6 +30,7 @@ pub struct LauncherEntity {
     pub alias: String,
     pub command: String,
     pub dispatcher: Dispatcher,
+    pub file_entity: FileEntity,
 }
 impl LauncherEntity {
     pub fn from_executable(entity: &ExecutableEntity) -> Self {
@@ -40,6 +42,7 @@ impl LauncherEntity {
             alias: entity.ui_name.clone(),
             command,
             dispatcher: entity.dispatcher.clone(),
+            file_entity: FileEntity::Executable(entity.to_owned()),
         }
     }
     pub fn from_ripgrep(entity: &RipgrepEntity) -> Self {
@@ -47,6 +50,7 @@ impl LauncherEntity {
             alias: entity.ui_name.clone(),
             command: entity.path.clone().to_string_lossy().to_string(),
             dispatcher: entity.dispatcher.clone(),
+            file_entity: FileEntity::Ripgrep(entity.to_owned()),
         }
     }
 }
