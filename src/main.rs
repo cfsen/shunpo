@@ -4,6 +4,7 @@ mod tests;
 mod config;
 mod coordinator;
 mod hyprland;
+mod rg;
 mod search;
 mod socket;
 mod socket_error;
