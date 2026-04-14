@@ -142,7 +142,7 @@ pub fn rg_lookup(
             let rge = FileEntity::Ripgrep(
                 RipgrepEntity {
                     dispatcher: Dispatcher::Hyprctl, // TODO: update to nvim dispatcher
-                    match_name: file.data.path.as_utf32(),
+                    match_name: file.data.lines.as_utf32(),
                     match_rank: None,
                     path: PathBuf::from(file.data.path.as_string()),
                     ui_name: file.data.path.as_string(),
