@@ -104,6 +104,7 @@ fn call_rg(term: &str, path: &str) -> Result<String, RipgrepError> {
     let output = Command::new("rg")
         .arg(term)
         .arg(path)
+        .arg("-i")
         .arg("--max-depth")
         .arg("1")
         .arg("--json")
