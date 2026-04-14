@@ -4,6 +4,7 @@ use gtk4::{
     ListBoxRow
 };
 
+use crate::search::entity_model::{ExecutableEntity, FileEntity, RipgrepEntity};
 use crate::{coordinator::types::SearchMessageData, ui_gtk4::types::{ShunpoState, ShunpoWidgets}};
 
 pub fn update_results(
@@ -22,16 +23,15 @@ pub fn update_results(
 
     // populate new results
     for entity  in data.results {
-        let row = ListBoxRow::new();
-        let box_ = Box::new(Orientation::Horizontal, 10);
-        box_.set_margin_top(5);
-        box_.set_margin_bottom(5);
-        box_.set_margin_start(10);
+        let row = match entity.file_entity {
+            FileEntity::Executable(executable_entity) => {
+                row_from_exec(&executable_entity)
+            },
+            FileEntity::Ripgrep(ripgrep_entity) => {
+                row_from_rg(&ripgrep_entity)
+            },
+        };
 
-        let label = Label::new(Some(&entity.alias.to_string()));
-        box_.append(&label);
-
-        row.set_child(Some(&box_));
         widgets.results.append(&row);
     }
 
@@ -41,4 +41,48 @@ pub fn update_results(
     ){
         widgets.results.select_row(Some(&target_row_idx));
     }
+}
+
+fn row_from_exec(entity: &ExecutableEntity) -> ListBoxRow {
+    let row = ListBoxRow::new();
+    let hbox = new_listbox_hbox();
+
+    let label = Label::new(Some(&entity.ui_name));
+    hbox.append(&label);
+
+    row.set_child(Some(&hbox));
+    row
+}
+
+fn row_from_rg(entity: &RipgrepEntity) -> ListBoxRow {
+    let row = ListBoxRow::new();
+    let hbox = new_listbox_hbox();
+
+    let vbox = Box::new(Orientation::Vertical, 2);
+    vbox.set_hexpand(true);
+
+    let label = Label::new(Some(&entity.ui_name));
+    label.set_halign(gtk4::Align::Start);
+    vbox.append(&label);
+
+    let matching_line = format!("{}: {}", entity.line, entity.match_name);
+    let body_text = Label::new(Some(&matching_line));
+    body_text.set_halign(gtk4::Align::Fill);
+    body_text.set_wrap(true);
+    body_text.set_xalign(0.0);
+
+    vbox.append(&body_text);
+    hbox.append(&vbox);
+
+    row.set_child(Some(&hbox));
+    row
+}
+
+fn new_listbox_hbox() -> Box {
+    let hbox = Box::new(Orientation::Horizontal, 10);
+    hbox.set_margin_top(5);
+    hbox.set_margin_bottom(5);
+    hbox.set_margin_start(10);
+    hbox.set_hexpand(true);
+    hbox
 }
