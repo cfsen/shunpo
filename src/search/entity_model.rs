@@ -12,7 +12,7 @@ pub enum FileEntity {
 pub enum Dispatcher {
     Hyprctl,
     Shell,
-    Custom(CustomDispatcher),
+    Custom,
 }
 #[derive(Clone, Debug)]
 pub struct CustomDispatcher {
