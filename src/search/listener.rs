@@ -6,7 +6,7 @@ use crate::{
     config::config::ShunpoConfig, coordinator::types::{
         CoordinatorMessage,
         SearchMessageData
-    }, search::{
+    }, rg::rg::rg_lookup, search::{
         entity_model::FileEntity,
         entity_repository::{EntityRepository, RepositoryConfig},
         matcher_helpers::search_entity
@@ -46,9 +46,9 @@ async fn search_listener(
                 }));
                 continue;
             }
-            // else if msg.starts_with("rg ") {
-            //     haystack = entity_repo.get_generic_documents();
-            // }
+            else if msg.starts_with("rg ") {
+                results = rg_lookup(&msg[2..], &config).unwrap_or_else(|_| vec![]);
+            }
             else if msg.starts_with("b ") {
                 haystack = entity_repo.get_generic_executables();
                 results = search_entity(&haystack, msg[2..].to_string(), &mut matcher);
