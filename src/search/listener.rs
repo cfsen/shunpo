@@ -28,12 +28,11 @@ async fn search_listener(
     config: ShunpoConfig
 ){
     let mut matcher = nucleo::Matcher::new(nucleo::Config::DEFAULT);
+    let mut haystack: &Vec<FileEntity>;
 
     let repo_config = RepositoryConfig::from_shunpo_config(&config);
-
     let mut entity_repo = EntityRepository::new(repo_config);
     entity_repo.populate();
-    let mut haystack: &Vec<FileEntity>;
 
     loop {tokio::select! {
         Some(msg) = search_rx.recv() => {
