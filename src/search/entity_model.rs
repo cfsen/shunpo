@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::{collections::HashMap, path::PathBuf};
 use nucleo::Utf32String;
 
 #[derive(Clone)]
@@ -16,9 +16,33 @@ pub enum Dispatcher {
 }
 #[derive(Clone, Debug)]
 pub struct CustomDispatcher {
-    args: Option<Vec<String>>,
-    executable: String,
-    from_shell: bool,
+    pub alias: String,          // for identifying this dispatcher when outputting errors
+    pub requires: Vec<String>,  // args it expects to parse: $term, $editor, $path, etc.
+    pub template: String,       // "hyprctl dispatch exec \"$term -e $editor $path"
+    pub valid: bool,            // true when `template` contains every `require`. set with validate_template()
+}
+impl CustomDispatcher {
+    // TODO: result type
+    pub fn compose_dispatch(&self, args: HashMap<String, &str>) -> Option<String> {
+        if !self.valid { return None; }
+
+        let mut dispatch_call = self.template.clone();
+        for req in &self.requires {
+            let Some(to) = args.get(req) else { return None; };
+            dispatch_call = dispatch_call.replace(req, to);
+        }
+        Some(dispatch_call)
+    }
+    pub fn validate_template(&mut self) -> bool {
+        for req in &self.requires {
+            if self.template.find(req) == None {
+                self.valid = false;
+                return self.valid;
+            }
+        }
+        self.valid = true;
+        self.valid
+    }
 }
 
 //
