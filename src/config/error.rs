@@ -8,7 +8,6 @@ pub enum ConfigError {
     NoSupportedTerminal,
     OpenUserDir(std::env::VarError),
     OutdatedConfig(String),
-    Unspecified,
 }
 impl std::fmt::Display for ConfigError {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
@@ -23,7 +22,6 @@ impl std::fmt::Display for ConfigError {
             Self::NoSupportedTerminal=> { write!(f, "{}: NoSupportedTerminal", prefix) },
             Self::OpenUserDir(e) => { write!(f, "{}: OpenUserDir: {}", prefix, e) },
             Self::OutdatedConfig(version) => { write!(f, "{}: OutdatedConfig: {}", prefix, version) },
-            Self::Unspecified => { write!(f, "{}: Unspecified", prefix) },
         }
     }
 }
