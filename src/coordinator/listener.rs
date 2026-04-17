@@ -1,9 +1,11 @@
+use std::collections::HashMap;
+
 use log::{error, info};
 use tokio::sync::mpsc;
 
 use crate::{coordinator::{error::CoordinatorError, types::{
-    CoordinatorMessage, FeedbackData, GuiMessage, HyprlandEventData, RipgrepResultData, SearchMessageData, ShunpoSocketEventData
-}}, hyprland::{error::HyprError, hyprctl::{dispatch, dispatch_from_term}}, search::entity_model::Dispatcher};
+    CoordinatorMessage, FeedbackData, GuiMessage, HyprlandEventData, SearchMessageData, ShunpoSocketEventData
+}}, hyprland::hyprctl::{dispatch, dispatch_from_term}, search::entity_model::{CustomDispatcher, Dispatcher}};
 
 pub async fn coordinator_run(
     hyprland_rx: mpsc::UnboundedReceiver<CoordinatorMessage>,
@@ -32,6 +34,10 @@ async fn coordinator_listener(
     mut search_coord_rx: mpsc::UnboundedReceiver<CoordinatorMessage>,
     mut feedback_rx: mpsc::UnboundedReceiver<CoordinatorMessage>,
 ) -> Result<(),Box<dyn std::error::Error + Send + Sync>> {
+
+    // TODO: ripgrep dispatcher template from config
+    let rg_dispatcher = crate::rg::dispatcher::create_default();
+
     loop {
         tokio::select! {
             Some(CoordinatorMessage::HyprlandEvent(msg)) = hyprland_rx.recv()
@@ -44,7 +50,7 @@ async fn coordinator_listener(
             => { log_error(handle_search(msg, &gui_tx).await, "Search handler"); },
 
             Some(CoordinatorMessage::Feedback(msg)) = feedback_rx.recv()
-            => { log_error(handle_feedback(msg, &gui_tx).await, "Feedback handler"); },
+            => { log_error(handle_feedback(msg, &rg_dispatcher, &gui_tx).await, "Feedback handler"); },
 
             else => {
                 info!("All input channels closed. Exiting coordinator loop.");
@@ -91,6 +97,7 @@ async fn handle_search(
 
 async fn handle_feedback(
     msg: FeedbackData,
+    rg_dispatcher: &CustomDispatcher,
     gui_tx: &async_channel::Sender<GuiMessage>,
 ) -> Result<(), CoordinatorError> {
     let gui_cmd = match msg {
@@ -108,8 +115,35 @@ async fn handle_feedback(
             let dispatch = match run.dispatcher {
                 Dispatcher::Shell => { dispatch_from_term(&cmd) },
                 Dispatcher::Hyprctl => { dispatch(&cmd) },
-                _ => {
-                    Err(HyprError::HyprCtlDispatchFailure)
+                Dispatcher::Custom => {
+                    match run.file_entity {
+                        crate::search::entity_model::FileEntity::Ripgrep(ripgrep_entity) => {
+                            // TODO: move to own fn
+                            let mut args: HashMap<String, &str> = HashMap::new();
+                            let _path = ripgrep_entity.path.to_string_lossy();
+                            let _line = ripgrep_entity.line.to_string();
+
+                            args.insert("$term".to_string(), "ghostty");
+                            args.insert("$editor".to_string(), "nvim");
+                            args.insert("$path".to_string(), &_path);
+                            args.insert("$line".to_string(), &_line);
+
+                            if let Some(call) = rg_dispatcher.compose_dispatch(args) {
+                                info!("ripgrep dispatcher will call: {:?}", call);
+                                let _ = std::process::Command::new("sh")
+                                    .arg("-c")
+                                    .arg(&call)
+                                    .spawn();
+                            }
+                            else {
+                                error!("Failed to compose dispatch for ripgrep.");
+                            }
+                        },
+                        crate::search::entity_model::FileEntity::Executable(_) => {
+                            error!("Executable entity requested a custom dispatcher.");
+                        },
+                    }
+                    Ok(())
                 },
             };
             match dispatch {
