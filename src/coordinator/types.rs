@@ -1,4 +1,4 @@
-use crate::{hyprland::structs::{LayerLevel, MonitorId, MonitorName, WorkspaceId}, search::entity_model::LauncherEntity};
+use crate::{hyprland::structs::{LayerLevel, MonitorName}, search::entity_model::LauncherEntity};
 
 //
 // coordinator inbound messages
