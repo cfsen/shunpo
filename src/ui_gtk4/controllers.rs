@@ -1,6 +1,6 @@
 use gtk4::gdk::{Key, ModifierType};
 use gtk4::{prelude::*, Entry, EventControllerKey, ListBox};
-use log::{error, info};
+use log::error;
 use std::cell::RefCell;
 use std::rc::Rc;
 use tokio::sync::mpsc;
@@ -140,10 +140,6 @@ pub fn search_controller(
                 res = result_data_from_idx(&results, &state);
             }
             if let Some(data) = res {
-                info!("Lookup:");
-                info!("name: {}", data.alias);
-                info!("command: {:?}", data.command);
-                info!("dispatcher: {:?}", data.dispatcher);
                 let _ = feedback_tx.send(CoordinatorMessage::Feedback(FeedbackData::Run(data)));
             }
             else {
