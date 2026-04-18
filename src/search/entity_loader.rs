@@ -49,7 +49,13 @@ pub fn scan_desktop_executables(extra: Vec<PathBuf>) -> Vec<ExecutableEntity> {
             .map(|cow| cow.into_owned())
             .unwrap_or_else(|| "Unknown".to_string());
 
-        // TODO: other filtering
+
+        // TODO: read filters from config
+        if let Some(categories) = entry.categories() {
+            if categories.iter().find(|x| x.contains("X-LSP-Plugins")).is_some() {
+                continue;
+            }
+        }
 
         let no_display = entry.no_display();
         if no_display {
