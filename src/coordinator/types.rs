@@ -6,7 +6,6 @@ use crate::{hyprland::structs::{LayerLevel, MonitorName}, search::entity_model::
 pub enum CoordinatorMessage {
     HyprlandEvent(HyprlandEventData),
     ShunpoSocketEvent(ShunpoSocketEventData),
-    RipgrepResult(RipgrepResultData),
     SearchMessage(SearchMessageData),
     Feedback(FeedbackData),
 }
@@ -15,10 +14,6 @@ pub struct HyprlandEventData {
 }
 pub enum ShunpoSocketEventData {
     ToggleUiMode,
-}
-pub struct RipgrepResultData {
-    success: bool,
-    results: Option<Vec<String>>,
 }
 pub struct SearchMessageData {
     pub success: bool,
