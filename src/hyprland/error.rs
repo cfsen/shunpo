@@ -1,6 +1,5 @@
 pub enum HyprError {
     EventParseFailed,
-    HyprCtlDispatchFailure,
     HyprCtlDispatchTerm,
     HyprCtlExec(String),
     HyprCtlExecDecode(String),
@@ -18,15 +17,11 @@ pub enum HyprError {
     ShunpoTargetNoSolution,
     WorkspaceIdNotFound,
     XdgRuntimeDir(String),
-
-    #[deprecated(note = "Replace with a specific error variant")]
-    Unspecified,
 }
 impl std::fmt::Display for HyprError {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
             HyprError::EventParseFailed => write!(f, "EventParseFailed"),
-            HyprError::HyprCtlDispatchFailure => write!(f, "HyprCtlDispatchFailure"),
             HyprError::HyprCtlDispatchTerm => write!(f, "HyprCtlDispatchTerm"),
             HyprError::HyprCtlExec(e) => write!(f, "HyprCtlExec: {}", e),
             HyprError::HyprCtlExecDecode(e) => write!(f, "HyprCtlExecDecode: {}", e),
@@ -44,9 +39,6 @@ impl std::fmt::Display for HyprError {
             HyprError::ShunpoTargetNoSolution => write!(f, "ShunpoTargetNoSolution"),
             HyprError::WorkspaceIdNotFound => write!(f, "WorkspaceIdNotFound"),
             HyprError::XdgRuntimeDir(e) => write!(f, "XdgRuntimeDir: Unable to open socket: {}", e),
-
-            #[allow(deprecated)]
-            HyprError::Unspecified => write!(f, "Unspecified"),
         }
     }
 }
