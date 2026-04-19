@@ -116,10 +116,16 @@ impl HyprlandState {
 // remove
 //
 impl HyprlandState {
+    // TODO: Silencing dead code warnings as this module will be extracted into its own repo.
+
+    #[allow(dead_code)]
+    /// Removes a monitor from tracked state.
     pub fn remove_monitor(&mut self, monitor_name: MonitorName) -> Result<Monitor, HyprError> {
         self.monitors.remove(&monitor_name).ok_or(HyprError::MonitorIdNotFound)
     }
 
+    #[allow(dead_code)]
+    /// Removes a workspace from tracked state.
     pub fn remove_workspace(&mut self, id: WorkspaceId) -> Result<Workspace, HyprError> {
         self.workspaces.remove(&id).ok_or(HyprError::WorkspaceIdNotFound)
     }
