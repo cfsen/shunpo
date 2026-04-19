@@ -16,7 +16,6 @@ pub enum ShunpoSocketEventData {
     ToggleUiMode,
 }
 pub struct SearchMessageData {
-    pub success: bool,
     pub results: Vec<LauncherEntity>,
 }
 pub enum FeedbackData {
