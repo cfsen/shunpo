@@ -77,16 +77,13 @@ impl EntityRepository {
 
 pub struct RepositoryConfig {
     pub exec_paths: Vec<PathBuf>,
-    pub rg_paths: Vec<PathBuf>,
 }
 impl RepositoryConfig {
     pub fn from_shunpo_config(config: &ShunpoConfig) -> RepositoryConfig {
         let exec_paths = Self::get_valid_paths(&config.desktop_entries_paths);
-        let rg_paths = Vec::<PathBuf>::new(); // TODO: ripgrep impl
 
         RepositoryConfig {
             exec_paths,
-            rg_paths,
         }
     }
     fn get_valid_paths(paths: &[String]) -> Vec<PathBuf> {
