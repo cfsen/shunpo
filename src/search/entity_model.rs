@@ -60,7 +60,6 @@ impl CustomDispatcher {
 
 #[derive(Clone)]
 pub struct LauncherEntity {
-    pub alias: String,
     pub command: String,
     pub dispatcher: Dispatcher,
     pub file_entity: FileEntity,
@@ -72,7 +71,6 @@ impl LauncherEntity {
             _  => { entity.path.to_string_lossy().to_string() },
         };
         LauncherEntity {
-            alias: entity.ui_name.clone(),
             command,
             dispatcher: entity.dispatcher.clone(),
             file_entity: FileEntity::Executable(entity.to_owned()),
@@ -80,7 +78,6 @@ impl LauncherEntity {
     }
     pub fn from_ripgrep(entity: &RipgrepEntity) -> Self {
         LauncherEntity {
-            alias: entity.ui_name.clone(),
             command: entity.path.clone().to_string_lossy().to_string(),
             dispatcher: entity.dispatcher.clone(),
             file_entity: FileEntity::Ripgrep(entity.to_owned()),
