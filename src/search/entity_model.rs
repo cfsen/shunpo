@@ -1,4 +1,4 @@
-use std::{collections::HashMap, path::PathBuf};
+use std::{collections::HashMap, fmt::Display, path::PathBuf};
 use nucleo::Utf32String;
 
 #[derive(Clone)]
@@ -13,6 +13,15 @@ pub enum Dispatcher {
     Hyprctl,
     Shell,
     Custom,
+}
+impl Display for Dispatcher {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Dispatcher::Hyprctl => write!(f, "Hyprctl"),
+            Dispatcher::Shell => write!(f, "Shell"),
+            Dispatcher::Custom => write!(f, "Custom"),
+        }
+    }
 }
 #[derive(Clone, Debug)]
 pub struct CustomDispatcher {
