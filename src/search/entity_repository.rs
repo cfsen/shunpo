@@ -9,7 +9,6 @@ pub struct EntityRepository {
 
     pub generic_exec_desktop: Vec<FileEntity>,
     pub generic_executables: Vec<FileEntity>,
-    // pub generic_documents: Vec<FileEntity>,
 
     pub config: RepositoryConfig,
 }
@@ -56,21 +55,6 @@ impl EntityRepository {
         entities.iter()
             .cloned()
             .map(|e| FileEntity::Executable(e))
-            .collect::<Vec<FileEntity>>()
-    }
-
-    //
-    // documents
-    //
-
-    // pub fn get_generic_documents(&self) -> &Vec<FileEntity> {
-    //     &self.generic_documents
-    // }
-
-    pub fn build_generic_documents(entities: &Vec<RipgrepEntity>) -> Vec<FileEntity> {
-        entities.iter()
-            .cloned()
-            .map(|e| FileEntity::Ripgrep(e))
             .collect::<Vec<FileEntity>>()
     }
 }
