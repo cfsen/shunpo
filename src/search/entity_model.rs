@@ -195,7 +195,9 @@ pub trait EntityFields {
 }
 pub trait Matching {
     fn match_field(&self) -> &Utf32String;
+    #[allow(dead_code)] // TODO: pending impl of weight-by-use results
     fn match_rank(&self) -> Option<u16>;
+    #[allow(dead_code)] // TODO: pending impl of weight-by-use results
     fn set_match_rank(&mut self, rank: u16);
 }
 pub trait Export {
