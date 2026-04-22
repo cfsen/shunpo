@@ -5,7 +5,7 @@ use tokio::sync::mpsc;
 
 use crate::{coordinator::{error::CoordinatorError, types::{
     CoordinatorMessage, FeedbackData, GuiMessage, HyprlandEventData, SearchMessageData, ShunpoSocketEventData
-}}, hyprland::hyprctl::{dispatch, dispatch_from_term}, search::entity_model::{CustomDispatcher, Dispatcher}};
+}}, hyprland::hyprctl::{dispatch, dispatch_from_term}, search::entity_model::{CustomDispatcher, Dispatcher, EntityFields, Export}};
 
 pub async fn coordinator_run(
     hyprland_rx: mpsc::UnboundedReceiver<CoordinatorMessage>,
@@ -116,7 +116,7 @@ async fn handle_feedback(
                 Dispatcher::Shell => { dispatch_from_term(&cmd) },
                 Dispatcher::Hyprctl => { dispatch(&cmd) },
                 Dispatcher::Custom => {
-                    match run.file_entity {
+                    match &run.file_entity {
                         crate::search::entity_model::FileEntity::Ripgrep(ripgrep_entity) => {
                             // TODO: move to own fn
                             let mut args: HashMap<String, &str> = HashMap::new();
@@ -151,7 +151,12 @@ async fn handle_feedback(
                     info!("Dispatched: {}", &cmd);
                 },
                 Err(e) => {
-                    error!("Dispatch error: {}", e);
+                    error!("Dispatch failed: {}", e);
+                    let entity = run.file_entity.into_entity();
+                    error!("-> ui_name: {}", entity.ui_name());
+                    error!("-> path: {}", entity.path().to_string_lossy());
+                    error!("-> dispatcher: {}", entity.dispatcher());
+                    return Err(CoordinatorError::FeedbackError(e.to_string()))
                 },
             }
 
