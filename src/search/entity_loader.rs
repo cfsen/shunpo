@@ -5,6 +5,7 @@ use std::os::unix::fs::PermissionsExt;
 use nucleo::Utf32String;
 
 use crate::search::entity_model::{Dispatcher, ExecutableEntity, ExecutableSource};
+use crate::search::error::EntityError;
 
 pub fn scan_path_executables() -> Vec<ExecutableEntity> {
     let mut executables = Vec::new();
@@ -95,8 +96,44 @@ pub fn scan_desktop_executables(extra: Vec<PathBuf>) -> Vec<ExecutableEntity> {
     executables
 }
 
-pub fn scan_script_executables() -> Vec<ExecutableEntity> {
-    Vec::new()
+pub fn scan_script_executables(config_paths: &Vec<PathBuf>) -> Vec<ExecutableEntity> {
+    let mut all_scripts = Vec::<ExecutableEntity>::new();
+    for dir_path in config_paths {
+        if let Ok(scripts) = find_scripts_in_path(&dir_path) {
+            for (path, ui_name) in scripts {
+                all_scripts.push(
+                    ExecutableEntity {
+                        dispatcher: Dispatcher::Shell,
+                        match_name: Utf32String::from(ui_name.clone()),
+                        match_rank: None,
+                        path,
+                        ui_name,
+
+                        source: ExecutableSource::ShellScript,
+                        exec: "".to_string(),
+                    }
+                );
+            }
+        }
+    }
+    all_scripts
+}
+
+fn find_scripts_in_path(dir: &PathBuf) -> Result<Vec<(PathBuf, String)>, EntityError> {
+    let paths = std::fs::read_dir(dir)
+        .map_err(|_| EntityError::WIP)?
+        .filter_map(|res| res.ok())
+        .map(|dir_entry| (dir_entry.path(), dir_entry.file_name()))
+        .filter_map(|(path, file)| {
+            if path.extension().map_or(false, |ext| ext == "sh") {
+                Some((path, file.to_string_lossy().into_owned()))
+            }
+            else {
+                None
+            }
+        })
+        .collect::<Vec<(_, _)>>();
+    Ok(paths)
 }
 
 fn find_executables_in_path(path_env: &str) -> impl Iterator<Item = PathBuf> + '_ {
