@@ -13,6 +13,7 @@ pub struct ShunpoConfig {
     pub terminal_path: String,
     pub desktop_entries_paths: Vec<String>,
     pub ripgrep_paths: Vec<String>,
+    pub script_paths: Vec<String>,
 }
 
 impl ShunpoConfig {
@@ -45,6 +46,7 @@ impl ShunpoConfig {
         let version = env!("CARGO_PKG_VERSION").to_string();
         let desktop_entries_paths = Vec::<String>::new();
         let ripgrep_paths = Vec::<String>::new();
+        let script_paths = Vec::<String>::new();
 
         let config = ShunpoConfig {
             version,
@@ -52,6 +54,7 @@ impl ShunpoConfig {
             terminal_path,
             desktop_entries_paths,
             ripgrep_paths,
+            script_paths,
         };
 
         config.save_config()?;
