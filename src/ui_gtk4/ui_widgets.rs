@@ -7,6 +7,7 @@ use gtk4::{
 use gtk4::glib;
 use log::error;
 
+use crate::hyprland::hyprctl;
 use crate::system;
 
 pub fn volume() -> Scale {
@@ -54,12 +55,12 @@ pub fn workspaces() -> gtk4::Box {
     let container = gtk4::Box::new(Orientation::Horizontal, 0);
     container.add_css_class("workspaces");
 
-    // TODO: fetch on startup
-    let workspaces = vec![
-        (1, false),
-        (2, true),  // active
-        (3, false),
-    ];
+    let workspaces = if let Ok(monitors) = hyprctl::get_monitors() {
+        monitors.iter().map(|m| (m.active_workspace.id.to_string(), false)).collect()
+    }
+    else {
+        vec![("Error".to_string(), false)]
+    };
 
     for (num, is_active) in workspaces {
         let ws_box = gtk4::Box::new(Orientation::Horizontal, 0);
@@ -71,7 +72,7 @@ pub fn workspaces() -> gtk4::Box {
             ws_box.add_css_class("ws-inactive-bg");
         }
 
-        let label = Label::new(Some(&num.to_string()));
+        let label = Label::new(Some(&num));
         label.add_css_class("ws-label");
         ws_box.append(&label);
 
