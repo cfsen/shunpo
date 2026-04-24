@@ -51,6 +51,10 @@ async fn search_listener(
                 haystack = entity_repo.get_generic_executables();
                 results = search_entity(&haystack, msg[2..].to_string(), &mut matcher);
             }
+            else if msg.starts_with("! ") {
+                haystack = entity_repo.get_generic_scripts();
+                results = search_entity(&haystack, msg[2..].to_string(), &mut matcher);
+            }
             else {
                 haystack = entity_repo.get_generic_exec_desktop();
                 results = search_entity(&haystack, msg, &mut matcher);
