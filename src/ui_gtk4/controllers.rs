@@ -1,6 +1,6 @@
 use gtk4::gdk::{Key, ModifierType};
 use gtk4::glib::Propagation;
-use gtk4::{prelude::*, Entry, EventControllerKey, ListBox};
+use gtk4::{Entry, EventControllerKey, EventSequenceState, GestureClick, ListBox, PropagationPhase, prelude::*};
 use log::error;
 use std::cell::RefCell;
 use std::rc::Rc;
@@ -12,6 +12,18 @@ use crate::{
     search::entity_model::LauncherEntity,
     ui_gtk4::{helpers::result_data_from_idx, types::ShunpoState},
 };
+
+/// Disable clicking search results
+pub fn click_sink(search: Entry) -> GestureClick {
+    let gesture = GestureClick::new();
+    gesture.set_propagation_phase(PropagationPhase::Capture);
+    gesture.connect_pressed(move |gesture, _, _, _| {
+        gesture.set_state(EventSequenceState::Claimed);
+        search.grab_focus();
+        search.set_position(-1);
+    });
+    gesture
+}
 
 /// Event handler for application
 pub fn window_controller(

@@ -14,6 +14,7 @@ use crate::{
     coordinator::types::CoordinatorMessage,
     ui_gtk4::{
         controllers::{
+            click_sink,
             search_controller,
             window_controller,
         },
@@ -100,6 +101,9 @@ pub fn build_ui(
     launcher_box.append(&results_window);
 
     // controllers
+    results_window.add_controller(click_sink(search.clone()));
+    results.add_controller(click_sink(search.clone()));
+
     let window_controller = window_controller(
         feedback_tx.clone()
     );
