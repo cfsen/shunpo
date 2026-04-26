@@ -15,6 +15,7 @@ use crate::{
 };
 
 pub fn toggle_ui_mode(widgets: &ShunpoWidgets, state: &ShunpoState) {
+    // TODO: tidy up
     match state.ui_mode {
         UIMode::Clock => {
             widgets.window.set_anchor(Edge::Top, false);
@@ -23,6 +24,7 @@ pub fn toggle_ui_mode(widgets: &ShunpoWidgets, state: &ShunpoState) {
             widgets.window.set_anchor(Edge::Bottom, true);
             widgets.window.set_default_size(70,10);
 
+            widgets.clock.set_visible(true);
             widgets.volume.set_visible(false);
             widgets.workspaces.set_visible(true);
             widgets.search.set_visible(false);
@@ -36,11 +38,40 @@ pub fn toggle_ui_mode(widgets: &ShunpoWidgets, state: &ShunpoState) {
             widgets.window.set_anchor(Edge::Bottom, false);
             widgets.window.set_default_size(800,600);
 
+            widgets.clock.set_visible(true);
             widgets.volume.set_visible(true);
             widgets.workspaces.set_visible(false);
             widgets.search.set_visible(true);
             widgets.results.set_visible(true);
             widgets.results_window.set_visible(true);
+        },
+        UIMode::ToClock => {
+            widgets.window.set_anchor(Edge::Top, false);
+            widgets.window.set_anchor(Edge::Left, false);
+            widgets.window.set_anchor(Edge::Right, true);
+            widgets.window.set_anchor(Edge::Bottom, true);
+            widgets.window.set_default_size(70,10);
+
+            widgets.clock.set_visible(false);
+            widgets.volume.set_visible(false);
+            widgets.workspaces.set_visible(false);
+            widgets.search.set_visible(false);
+            widgets.results.set_visible(false);
+            widgets.results_window.set_visible(false);
+        },
+        UIMode::ToLauncher => {
+            widgets.window.set_anchor(Edge::Top, false);
+            widgets.window.set_anchor(Edge::Left, false);
+            widgets.window.set_anchor(Edge::Right, false);
+            widgets.window.set_anchor(Edge::Bottom, false);
+            widgets.window.set_default_size(800,600);
+
+            widgets.clock.set_visible(false);
+            widgets.volume.set_visible(false);
+            widgets.workspaces.set_visible(false);
+            widgets.search.set_visible(false);
+            widgets.results.set_visible(false);
+            widgets.results_window.set_visible(false);
         },
     };
 }

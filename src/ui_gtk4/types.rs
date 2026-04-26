@@ -16,6 +16,7 @@ pub struct ShunpoWidgets {
 
 pub struct ShunpoState {
     pub ui_mode: UIMode,
+    pub ui_transition: bool,
     pub workspaces_data: Vec<WorkspaceMessage>,
     pub results_data: Vec<LauncherEntity>,
 }
@@ -23,6 +24,7 @@ impl ShunpoState {
     pub fn new() -> Self {
         Self {
             ui_mode: UIMode::Launcher,
+            ui_transition: false,
             results_data: Vec::new(),
             workspaces_data: Vec::new(),
         }
@@ -33,4 +35,6 @@ impl ShunpoState {
 pub enum UIMode {
     Launcher,
     Clock,
+    ToLauncher,
+    ToClock,
 }

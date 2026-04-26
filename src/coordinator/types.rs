@@ -28,6 +28,8 @@ pub enum FeedbackData {
 //
 pub enum GuiMessage {
     ToggleUiMode,
+    UiTransitionToClock,
+    UiTransitionToLauncher,
     Wake,
     Sleep,
     DeepSleep,

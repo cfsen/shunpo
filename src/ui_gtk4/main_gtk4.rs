@@ -60,12 +60,13 @@ pub fn run_shunpo(
             });
 
             // coordinator to ui
+            let feedback_ui_tx = feedback_tx.clone();
             let state_update = state_rc.clone();
             glib::spawn_future_local(async move {
                 while let Ok(msg) = rx.recv().await {
                     {
                         let mut state = state_update.borrow_mut();
-                        handle_ui_message(msg, &widgets, &mut state);
+                        handle_ui_message(msg, &widgets, &mut state, &feedback_ui_tx);
                         update_ui(&widgets, &state); // update ui
                     }
                 }
@@ -79,5 +80,5 @@ pub fn run_shunpo(
 }
 
 fn update_ui(widgets: &ShunpoWidgets, state: &ShunpoState) {
-    toggle_ui_mode(&widgets, &state);
+    toggle_ui_mode(&widgets, state);
 }

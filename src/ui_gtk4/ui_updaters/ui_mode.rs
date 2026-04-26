@@ -3,20 +3,27 @@ use gtk4::prelude::*;
 use gtk4_layer_shell::{KeyboardMode, Layer, LayerShell};
 
 use log::info;
+use tokio::sync::mpsc::UnboundedSender;
 
-use crate::coordinator::types::GuiMessage;
+use crate::coordinator::types::{CoordinatorMessage, FeedbackData, GuiMessage};
 use crate::hyprland::structs::{LayerLevel, MonitorName};
 use crate::system;
 use crate::ui_gtk4::errors::ShunpoGtk4Error;
 use crate::ui_gtk4::types::{ShunpoState, ShunpoWidgets, UIMode};
 
-pub fn ui_mode_from_gui_message(msg: GuiMessage, widgets: &ShunpoWidgets, state: &mut ShunpoState) {
+pub fn ui_mode_from_gui_message(
+    msg: GuiMessage,
+    widgets: &ShunpoWidgets,
+    state: &mut ShunpoState,
+    feedback_tx: &UnboundedSender<CoordinatorMessage>
+) {
     // shadow msg on toggle messages
     let msg = match msg {
         GuiMessage::ToggleUiMode => { 
             match state.ui_mode {
-                UIMode::Launcher => { GuiMessage::Sleep },
-                UIMode::Clock => { GuiMessage::Wake },
+                UIMode::Launcher => GuiMessage::Sleep,
+                UIMode::Clock => GuiMessage::Wake,
+                _ => GuiMessage::Wake,
             }
         },
         _ => { msg }
@@ -30,12 +37,35 @@ pub fn ui_mode_from_gui_message(msg: GuiMessage, widgets: &ShunpoWidgets, state:
         GuiMessage::Sleep => {
             layer = Layer::Overlay;
             keyboard_mode = KeyboardMode::None;
-            ui_mode = UIMode::Clock;
+            if !state.ui_transition {
+                // TODO: set timing from config
+                let fb_tx = feedback_tx.clone();
+                gtk4::glib::timeout_add_once(std::time::Duration::from_millis(200), move || {
+                    let _ = fb_tx.send(
+                        CoordinatorMessage::Feedback(
+                            FeedbackData::GuiMessagePassthrough(GuiMessage::UiTransitionToClock)
+                        )
+                    );
+                });
+            }
+            ui_mode = UIMode::ToClock;
         },
         GuiMessage::Wake => {
             layer = Layer::Overlay;
             keyboard_mode = KeyboardMode::Exclusive;
-            ui_mode = UIMode::Launcher;
+
+            if !state.ui_transition {
+                // TODO: set timing from config
+                let fb_tx = feedback_tx.clone();
+                gtk4::glib::timeout_add_once(std::time::Duration::from_millis(200), move || {
+                    let _ = fb_tx.send(
+                        CoordinatorMessage::Feedback(
+                            FeedbackData::GuiMessagePassthrough(GuiMessage::UiTransitionToLauncher)
+                        )
+                    );
+                });
+            }
+            ui_mode = UIMode::ToLauncher;
         },
         GuiMessage::DeepSleep => {
             layer = Layer::Bottom;
@@ -53,8 +83,8 @@ pub fn ui_mode_from_gui_message(msg: GuiMessage, widgets: &ShunpoWidgets, state:
                     layer = Layer::Overlay;
                     ui_mode = state.ui_mode.clone();
                     keyboard_mode = match ui_mode {
-                        UIMode::Clock => KeyboardMode::None,
                         UIMode::Launcher => KeyboardMode::Exclusive,
+                        _ => KeyboardMode::None,
                     };
                 },
             }
@@ -64,6 +94,12 @@ pub fn ui_mode_from_gui_message(msg: GuiMessage, widgets: &ShunpoWidgets, state:
             if let Ok(monitor) = find_display(target_monitor) {
                 widgets.window.set_monitor(Some(&monitor));
             }
+        },
+        GuiMessage::UiTransitionToClock => {
+            panic!("UITransitionToClock invariant: GuiMessage should have been caught earlier.");
+        },
+        GuiMessage::UiTransitionToLauncher => {
+            panic!("UiTransitionToLauncher invariant: GuiMessage should have been caught earlier.");
         },
         GuiMessage::UpdateWorkspace(_)=> {
             panic!("UI workspace invariant: GuiMessage::UpdateWorkspace should have been caught earlier.");
