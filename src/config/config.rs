@@ -14,6 +14,9 @@ pub struct ShunpoConfig {
     pub desktop_entries_paths: Vec<String>,
     pub ripgrep_paths: Vec<String>,
     pub script_paths: Vec<String>,
+    pub editor_dispatch: String,
+    pub editor_term: String,
+    pub editor: String,
 }
 
 impl ShunpoConfig {
@@ -47,6 +50,9 @@ impl ShunpoConfig {
         let desktop_entries_paths = Vec::<String>::new();
         let ripgrep_paths = Vec::<String>::new();
         let script_paths = Vec::<String>::new();
+        let editor_dispatch = "hyprctl dispatch exec \"$term -e $editor -c $line $path\"".to_string();
+        let editor_term = "ghostty".to_string();
+        let editor = "nvim".to_string();
 
         let config = ShunpoConfig {
             version,
@@ -55,6 +61,9 @@ impl ShunpoConfig {
             desktop_entries_paths,
             ripgrep_paths,
             script_paths,
+            editor_dispatch,
+            editor_term,
+            editor,
         };
 
         config.save_config()?;
