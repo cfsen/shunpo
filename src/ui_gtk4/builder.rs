@@ -112,6 +112,7 @@ pub fn build_ui(
     let search_controller = search_controller(
         search.clone(),
         results.clone(),
+        results_window.clone(),
         feedback_tx.clone(),
         state,
     );

@@ -1,6 +1,6 @@
 use gtk4::gdk::{Key, ModifierType};
 use gtk4::glib::Propagation;
-use gtk4::{Entry, EventControllerKey, EventSequenceState, GestureClick, ListBox, PropagationPhase, prelude::*};
+use gtk4::{Entry, EventControllerKey, EventSequenceState, GestureClick, ListBox, PropagationPhase, ScrolledWindow, prelude::*};
 use log::error;
 use std::cell::RefCell;
 use std::rc::Rc;
@@ -53,13 +53,14 @@ pub fn window_controller(
 pub fn search_controller(
     search: Entry,
     results: ListBox,
+    results_window: ScrolledWindow,
     feedback_tx: mpsc::UnboundedSender<CoordinatorMessage>,
     state_rc: Rc<RefCell<ShunpoState>>,
 ) -> EventControllerKey {
     let search_controller = EventControllerKey::new();
 
     search_controller.connect_key_pressed(
-        handle_keyboard_input_pressed(search.clone(), results.clone())
+        handle_keyboard_input_pressed(search.clone(), results.clone(), results_window.clone())
     );
 
     search_controller.connect_key_released(
@@ -138,12 +139,13 @@ fn handle_keyboard_input_released(
 fn handle_keyboard_input_pressed(
     search: Entry,
     results: ListBox,
+    results_window: ScrolledWindow,
 ) -> impl Fn(&EventControllerKey, Key, u32, ModifierType) -> Propagation {
     move |_, key, _code, modifier| {
         fn mod_ctrl(m: ModifierType) -> bool { m.contains(ModifierType::CONTROL_MASK) }
 
         if mod_ctrl(modifier) && (key == Key::n || key == Key::p) {
-            hkb_nav_results(key, &results)
+            hkb_nav_results(key, &results, results_window.clone())
         }
         else if mod_ctrl(modifier) && key == Key::w {
             hkb_edit_delete_word(&search)
@@ -158,7 +160,11 @@ fn handle_keyboard_input_pressed(
 }
 
 /// Move up and down results list with c^p, c^n
-fn hkb_nav_results(key: Key, results: &ListBox) -> Propagation {
+fn hkb_nav_results(
+    key: Key,
+    results: &ListBox,
+    results_window: ScrolledWindow,
+) -> Propagation {
     let cur = if key == Key::n { 1 } else { -1 };
 
     if let Some(target_row_idx) = results.row_at_index(
@@ -167,6 +173,17 @@ fn hkb_nav_results(key: Key, results: &ListBox) -> Propagation {
             .map_or_else(|| 0, |row| row.index() + cur),
     ) {
         results.select_row(Some(&target_row_idx));
+        if let Some((_, y)) = target_row_idx.translate_coordinates(&results_window, 0.0, 0.0) {
+            let vadj = results_window.vadjustment();
+            let row_h = target_row_idx.height() as f64;
+            let page = vadj.page_size();
+
+            let new_val = if y < 0.0 { vadj.value() + y } // above
+            else if y + row_h > page { vadj.value() + (y + row_h - page) } // below
+            else { return gtk4::glib::Propagation::Stop; }; // already visible
+
+            vadj.set_value(new_val.clamp(0.0, vadj.upper() - page));
+        }
     }
 
     gtk4::glib::Propagation::Stop
