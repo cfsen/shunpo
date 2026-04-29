@@ -73,9 +73,10 @@ fn main() -> ExitCode {
     let (feedback_tx, feedback_rx) = mpsc::unbounded_channel::<CoordinatorMessage>();
 
     // setup coordinator
+    let config_coord = config.clone();
     runtime().spawn(async move {
         // Pass gui_tx into the coordinator so it can send messages
-        coordinator_run(event_rx, shunpo_rx, search_coord_rx, gui_tx, feedback_rx).await;
+        coordinator_run(event_rx, shunpo_rx, search_coord_rx, gui_tx, feedback_rx, config_coord).await;
     });
 
     // setup renderer

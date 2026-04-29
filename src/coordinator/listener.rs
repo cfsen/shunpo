@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use log::{error, info};
 use tokio::sync::mpsc;
 
-use crate::{coordinator::{error::CoordinatorError, types::{
+use crate::{config::config::ShunpoConfig, coordinator::{error::CoordinatorError, types::{
     CoordinatorMessage, FeedbackData, GuiMessage, HyprlandEventData, SearchMessageData, ShunpoSocketEventData
 }}, hyprland::hyprctl::{dispatch, dispatch_from_term}, search::entity_model::{CustomDispatcher, Dispatcher, EntityFields, Export}};
 
@@ -13,6 +13,7 @@ pub async fn coordinator_run(
     search_coord_rx: mpsc::UnboundedReceiver<CoordinatorMessage>,
     gui_tx: async_channel::Sender<GuiMessage>,
     feedback_rx: mpsc::UnboundedReceiver<CoordinatorMessage>,
+    config: ShunpoConfig,
 ) {
     tokio::spawn(async move {
         if let Err(e) = coordinator_listener(
@@ -20,7 +21,8 @@ pub async fn coordinator_run(
             hyprland_rx,
             shunpo_rx,
             search_coord_rx,
-            feedback_rx
+            feedback_rx,
+            config,
         ).await {
             error!("Coordinator loop exited with error: {:?}", e);
         }
@@ -33,10 +35,10 @@ async fn coordinator_listener(
     mut shunpo_rx: mpsc::UnboundedReceiver<CoordinatorMessage>,
     mut search_coord_rx: mpsc::UnboundedReceiver<CoordinatorMessage>,
     mut feedback_rx: mpsc::UnboundedReceiver<CoordinatorMessage>,
+    config: ShunpoConfig,
 ) -> Result<(),Box<dyn std::error::Error + Send + Sync>> {
 
-    // TODO: ripgrep dispatcher template from config
-    let rg_dispatcher = crate::rg::dispatcher::create_default();
+    let rg_dispatcher = crate::rg::dispatcher::from_config_or_default(&config);
 
     loop {
         tokio::select! {
@@ -50,7 +52,7 @@ async fn coordinator_listener(
             => { log_error(handle_search(msg, &gui_tx).await, "Search handler"); },
 
             Some(CoordinatorMessage::Feedback(msg)) = feedback_rx.recv()
-            => { log_error(handle_feedback(msg, &rg_dispatcher, &gui_tx).await, "Feedback handler"); },
+            => { log_error(handle_feedback(msg, &rg_dispatcher, &gui_tx, &config).await, "Feedback handler"); },
 
             else => {
                 info!("All input channels closed. Exiting coordinator loop.");
@@ -99,6 +101,7 @@ async fn handle_feedback(
     msg: FeedbackData,
     rg_dispatcher: &CustomDispatcher,
     gui_tx: &async_channel::Sender<GuiMessage>,
+    config: &ShunpoConfig,
 ) -> Result<(), CoordinatorError> {
     let gui_cmd = match msg {
         FeedbackData::GuiMessagePassthrough(g) => { g }
@@ -123,8 +126,8 @@ async fn handle_feedback(
                             let _path = ripgrep_entity.path.to_string_lossy();
                             let _line = ripgrep_entity.line.to_string();
 
-                            args.insert("$term".to_string(), "ghostty");
-                            args.insert("$editor".to_string(), "nvim");
+                            args.insert("$term".to_string(), &config.editor_term);
+                            args.insert("$editor".to_string(), &config.editor);
                             args.insert("$path".to_string(), &_path);
                             args.insert("$line".to_string(), &_line);
 
