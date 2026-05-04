@@ -5,6 +5,7 @@ use nucleo::Utf32String;
 pub enum FileEntity {
     Executable(ExecutableEntity),
     Ripgrep(RipgrepEntity),
+    Virtual(VirtualEntity),
     // Image,
     // Audio,
 }
@@ -12,6 +13,7 @@ pub enum FileEntity {
 pub enum Dispatcher {
     Hyprctl,
     Shell,
+    Virtual,
     Custom,
 }
 impl Display for Dispatcher {
@@ -19,6 +21,7 @@ impl Display for Dispatcher {
         match self {
             Dispatcher::Hyprctl => write!(f, "Hyprctl"),
             Dispatcher::Shell => write!(f, "Shell"),
+            Dispatcher::Virtual => write!(f, "Virtual"),
             Dispatcher::Custom => write!(f, "Custom"),
         }
     }
@@ -83,6 +86,37 @@ impl LauncherEntity {
             file_entity: FileEntity::Ripgrep(entity.to_owned()),
         }
     }
+    pub fn from_virtual(entity: &VirtualEntity) -> Self {
+        LauncherEntity {
+            command: "".into(),
+            dispatcher: entity.dispatcher.clone(),
+            file_entity: FileEntity::Virtual(entity.to_owned()),
+        }
+    }
+}
+
+//
+// Virtual
+//
+#[derive(Clone)]
+pub struct VirtualEntity {
+    pub dispatcher: Dispatcher,
+    pub match_name: Utf32String,
+    #[allow(dead_code)] // TODO: pending impl of weight-by-use results
+    pub match_rank: Option<u16>,
+    pub path: PathBuf,
+    pub ui_name: String,
+}
+impl VirtualEntity {
+    pub fn no_dispatch(text: String) -> Self {
+        VirtualEntity {
+            dispatcher: Dispatcher::Virtual,
+            match_name: "".into(),
+            match_rank: None,
+            path: PathBuf::new(),
+            ui_name: text,
+        }
+    }
 }
 
 //
@@ -134,12 +168,14 @@ impl EntityFields for FileEntity {
         match self {
             Self::Executable(e) => &e.dispatcher,
             Self::Ripgrep(r) => &r.dispatcher,
+            Self::Virtual(v) => &v.dispatcher,
         }
     }
     fn path(&self) -> &PathBuf {
         match self {
             Self::Executable(e) => &e.path,
             Self::Ripgrep(r) => &r.path,
+            Self::Virtual(v) => &v.path,
         }
     }
 }
@@ -148,18 +184,21 @@ impl Matching for FileEntity {
         match self {
             Self::Executable(e) => &e.match_name,
             Self::Ripgrep(r) => &r.match_name,
+            Self::Virtual(v) => &v.match_name,
         }
     }
     fn match_rank(&self) -> Option<u16> {
         match self {
             Self::Executable(e) => e.match_rank,
             Self::Ripgrep(r) => r.match_rank,
+            Self::Virtual(v) => v.match_rank,
         }
     }
     fn set_match_rank(&mut self, rank: u16) {
         match self {
             Self::Executable(e) => e.match_rank = Some(rank),
             Self::Ripgrep(r) => r.match_rank = Some(rank),
+            Self::Virtual(v) => v.match_rank = Some(rank),
         }
     }
 }
@@ -168,18 +207,21 @@ impl Export for FileEntity {
         match self {
             Self::Executable(e) => &e.ui_name,
             Self::Ripgrep(r) => &r.ui_name,
+            Self::Virtual(v) => &v.ui_name,
         }
     }
     fn into_entity(self) -> FileEntity {
         match self {
             Self::Executable(e) => FileEntity::Executable(e),
             Self::Ripgrep(r) => FileEntity::Ripgrep(r),
+            Self::Virtual(v) => FileEntity::Virtual(v),
         }
     }
     fn into_launcher_entity(&self) -> LauncherEntity {
         match self {
             Self::Executable(e) => { LauncherEntity::from_executable(e) },
             Self::Ripgrep(r) => { LauncherEntity::from_ripgrep(r) },
+            Self::Virtual(v) => { LauncherEntity::from_virtual(v) },
         }
     }
 }

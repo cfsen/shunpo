@@ -118,6 +118,11 @@ async fn handle_feedback(
             let dispatch = match run.dispatcher {
                 Dispatcher::Shell => { dispatch_from_term(&cmd) },
                 Dispatcher::Hyprctl => { dispatch(&cmd) },
+                Dispatcher::Virtual => {
+                    error!("Virtual dispatcher was called");
+                    log::warn!("Virtual dispatch is currently not implemented in coordinator");
+                    Ok(())
+                },
                 Dispatcher::Custom => {
                     match &run.file_entity {
                         crate::search::entity_model::FileEntity::Ripgrep(ripgrep_entity) => {
@@ -143,6 +148,9 @@ async fn handle_feedback(
                             }
                         },
                         crate::search::entity_model::FileEntity::Executable(_) => {
+                            error!("Executable entity requested a custom dispatcher.");
+                        },
+                        crate::search::entity_model::FileEntity::Virtual(_) => {
                             error!("Executable entity requested a custom dispatcher.");
                         },
                     }

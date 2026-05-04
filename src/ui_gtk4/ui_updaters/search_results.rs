@@ -4,7 +4,7 @@ use gtk4::{
     ListBoxRow
 };
 
-use crate::search::entity_model::{ExecutableEntity, FileEntity, RipgrepEntity};
+use crate::search::entity_model::{ExecutableEntity, FileEntity, RipgrepEntity, VirtualEntity};
 use crate::{coordinator::types::SearchMessageData, ui_gtk4::types::{ShunpoState, ShunpoWidgets}};
 
 pub fn update_results(
@@ -29,6 +29,9 @@ pub fn update_results(
             },
             FileEntity::Ripgrep(ripgrep_entity) => {
                 row_from_rg(&ripgrep_entity)
+            },
+            FileEntity::Virtual(virtual_entity) => {
+                row_from_virt(&virtual_entity)
             },
         };
 
@@ -73,6 +76,17 @@ fn row_from_rg(entity: &RipgrepEntity) -> ListBoxRow {
 
     vbox.append(&body_text);
     hbox.append(&vbox);
+
+    row.set_child(Some(&hbox));
+    row
+}
+
+fn row_from_virt(entity: &VirtualEntity) -> ListBoxRow {
+    let row = ListBoxRow::new();
+    let hbox = new_listbox_hbox();
+
+    let label = Label::new(Some(&entity.ui_name));
+    hbox.append(&label);
 
     row.set_child(Some(&hbox));
     row
