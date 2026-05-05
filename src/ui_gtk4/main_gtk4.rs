@@ -15,6 +15,12 @@ use crate::{
     coordinator::types::{
         CoordinatorMessage,
         GuiMessage,
+        FeedbackData,
+        SearchMessageData,
+    },
+    search::entity_model::{
+        LauncherEntity,
+        VirtualEntity,
     },
     ui_gtk4::{
         builder::build_ui,
@@ -51,12 +57,10 @@ pub fn run_shunpo(
             toggle_ui_mode(&widgets, &state);
 
             // ui to coordinator
-            let tx = search_tx.clone();
+            let ev_search_tx = search_tx.clone();
+            let ev_feedback_ui_tx = feedback_tx.clone();
             widgets.search.connect_changed(move |entry| {
-                let query = entry.text().to_string();
-                if let Err(e) = tx.send(query) {
-                    error!("Failed to send search query: {}", e);
-                }
+                handle_entry_change(entry, &ev_search_tx, &ev_feedback_ui_tx);
             });
 
             // coordinator to ui
@@ -77,6 +81,58 @@ pub fn run_shunpo(
     });
 
     app.run()
+}
+
+fn handle_entry_change(
+    entry: &gtk4::Entry,
+    search_tx: &mpsc::UnboundedSender<String>,
+    feedback_tx: &mpsc::UnboundedSender<CoordinatorMessage>,
+) {
+    let query = entry.text().to_string();
+    if display_help_as_result(&query, &feedback_tx) {
+        return;
+    }
+
+    if let Err(e) = search_tx.send(query) {
+        error!("Failed to send search query: {}", e);
+    }
+}
+
+fn display_help_as_result(query: &str, feedback_tx: &mpsc::UnboundedSender<CoordinatorMessage>) -> bool {
+    let send_virtual_result = if query == ":q" {
+        Some(compose_fb_help_msg(vec!["Quit shunpo".into()]))
+    }
+    else if query == ":deepsleep" {
+        Some(compose_fb_help_msg(vec!["Hide shunpo".into()]))
+    }
+    else { None };
+
+    if let Some(msg) = send_virtual_result {
+        if let Err(e) = feedback_tx.send(msg) {
+            error!("Failed to inject virtual entity to feedback: {}", e);
+        }
+        return true;
+    }
+
+    false
+}
+
+fn compose_fb_help_msg(text: Vec<String>) -> CoordinatorMessage {
+    let results = text.into_iter()
+        .map(compose_launcher_entity_from_string)
+        .collect();
+
+    CoordinatorMessage::Feedback(
+        FeedbackData::GuiMessagePassthrough(
+            GuiMessage::DisplayResults(
+                SearchMessageData { results }
+            )
+        )
+    )
+}
+
+fn compose_launcher_entity_from_string(command: String) -> LauncherEntity {
+    LauncherEntity::from_virtual(&VirtualEntity::no_dispatch(command))
 }
 
 fn update_ui(widgets: &ShunpoWidgets, state: &ShunpoState) {
