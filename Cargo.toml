@@ -18,6 +18,8 @@ async-channel = "2.5.0"
 freedesktop-desktop-entry = "0.7.19"
 toml = "0.9.8"
 
+hw-rs = { git = "https://github.com/cfsen/hw-rs", branch = "main" }
+
 [profile.release]
 opt-level = 2
 
