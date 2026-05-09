@@ -14,6 +14,7 @@ pub struct ShunpoConfig {
     pub desktop_entries_paths: Vec<String>,
     pub ripgrep_paths: Vec<String>,
     pub script_paths: Vec<String>,
+    pub wallpaper_paths: Vec<String>,
     pub editor_dispatch: String,
     pub editor_term: String,
     pub editor: String,
@@ -49,6 +50,7 @@ impl ShunpoConfig {
         let version = env!("CARGO_PKG_VERSION").to_string();
         let desktop_entries_paths = Vec::<String>::new();
         let ripgrep_paths = Vec::<String>::new();
+        let wallpaper_paths = Vec::<String>::new();
         let script_paths = Vec::<String>::new();
         let editor_dispatch = "hyprctl dispatch exec \"$term -e $editor -c $line $path\"".to_string();
         let editor_term = "ghostty".to_string();
@@ -61,6 +63,7 @@ impl ShunpoConfig {
             desktop_entries_paths,
             ripgrep_paths,
             script_paths,
+            wallpaper_paths,
             editor_dispatch,
             editor_term,
             editor,
