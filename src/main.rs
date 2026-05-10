@@ -4,6 +4,7 @@ mod tests;
 mod config;
 mod coordinator;
 mod hyprland;
+mod hyprpaper_client;
 mod rg;
 mod search;
 mod socket;
