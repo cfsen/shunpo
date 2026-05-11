@@ -92,6 +92,11 @@ fn handle_entry_change(
     if display_help_as_result(&query, &feedback_tx) {
         return;
     }
+    if display_virt_command(&query, &feedback_tx) {
+        return;
+    }
+
+    // TODO: check for queries that should inject virtual entities that can dispatch
 
     if let Err(e) = search_tx.send(query) {
         error!("Failed to send search query: {}", e);
@@ -133,6 +138,25 @@ fn compose_fb_help_msg(text: Vec<String>) -> CoordinatorMessage {
 
 fn compose_launcher_entity_from_string(command: String) -> LauncherEntity {
     LauncherEntity::from_virtual(&VirtualEntity::no_dispatch(command))
+}
+
+fn display_virt_command(
+    query: &str,
+    feedback_tx: &mpsc::UnboundedSender<CoordinatorMessage>,
+) -> bool {
+    let send_virt_res = if query == ":wall" {
+        Some(compose_fb_help_msg(vec!["Random wallpaper!".into()]))
+    }
+    else { None };
+
+    if let Some(msg) = send_virt_res {
+        if let Err(e) = feedback_tx.send(msg) {
+            error!("Failed to inject virtual entity to feedback: {}", e);
+        }
+        return true;
+    }
+
+    false
 }
 
 fn update_ui(widgets: &ShunpoWidgets, state: &ShunpoState) {

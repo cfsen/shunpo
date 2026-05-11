@@ -119,8 +119,8 @@ async fn handle_feedback(
                 Dispatcher::Shell => { dispatch_from_term(&cmd) },
                 Dispatcher::Hyprctl => { dispatch(&cmd) },
                 Dispatcher::Virtual => {
-                    error!("Virtual dispatcher was called");
-                    log::warn!("Virtual dispatch is currently not implemented in coordinator");
+                    crate::hyprpaper_client::paper_client::set_random_wallpaper(&config);
+                    log::warn!("Virtual dispatch set random wallpapers without branching");
                     Ok(())
                 },
                 Dispatcher::Custom => {
