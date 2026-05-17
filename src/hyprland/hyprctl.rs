@@ -32,7 +32,7 @@ pub fn get_clients() -> Result<Vec<Client>, HyprError> {
 }
 
 /// Get all monitors
-    pub fn get_monitors() -> Result<Vec<Monitor>, HyprError> {
+pub fn get_monitors() -> Result<Vec<Monitor>, HyprError> {
     let output = hyprctl(&["monitors"])?;
     from_json_or_panic(&output, "get_monitors")
 }
@@ -45,7 +45,7 @@ pub fn get_layers() -> Result<Layers, HyprError> {
 
 /// Dispatch a Hyprland command
 pub fn dispatch(cmd: &str) -> Result<(), HyprError> {
-    hyprctl(&["dispatch", "exec", cmd])?;
+    hyprctl(&["dispatch", &format!("hl.dsp.exec_cmd(\"{}\")", cmd)])?;
     Ok(())
 }
 
@@ -54,7 +54,7 @@ pub fn dispatch_from_term(bin: &str) -> Result<(), HyprError> {
     // TODO: TODO_PRESERVE_ENV
     if let Ok(term) = env::var("TERM_PROGRAM") {
         info!("Dispatching: {}", bin);
-        hyprctl(&["dispatch", "exec", &format!("{} -e sh -c '{}'", term, bin)])?;
+        hyprctl(&["dispatch", &format!("hl.dsp.exec_cmd(\"{} -e sh -c '{}'\")", term, bin)])?;
         Ok(())
     }
     else {
