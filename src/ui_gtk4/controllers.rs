@@ -27,6 +27,8 @@ pub fn click_sink(search: Entry) -> GestureClick {
 
 /// Event handler for application
 pub fn window_controller(
+    results: ListBox,
+    results_window: ScrolledWindow,
     feedback_tx: mpsc::UnboundedSender<CoordinatorMessage>,
 ) -> EventControllerKey {
     let controller = EventControllerKey::new();
@@ -36,11 +38,16 @@ pub fn window_controller(
             // TODO: allow exit behavior with config
             // std::process::exit(0);
             let _ = feedback_tx.send(CoordinatorMessage::Feedback(
-                FeedbackData::GuiMessagePassthrough(GuiMessage::Sleep),
+                    FeedbackData::GuiMessagePassthrough(GuiMessage::Sleep),
             ));
         }
         // prevent focus loss of search field
         if key == Key::Up || key == Key::Down || key == Key::Tab {
+            let _ = hkb_nav_results(
+                if key == Key::Up { Key::p } else { Key::n },
+                &results,
+                results_window.clone()
+            );
             return gtk4::glib::Propagation::Stop;
         }
         gtk4::glib::Propagation::Proceed
@@ -81,7 +88,7 @@ fn send_input(
 
     if text.is_empty() {
         let _ = feedback_tx.send(CoordinatorMessage::Feedback(
-            FeedbackData::GuiMessagePassthrough(GuiMessage::Sleep),
+                FeedbackData::GuiMessagePassthrough(GuiMessage::Sleep),
         ));
         return;
     }
@@ -90,7 +97,7 @@ fn send_input(
     }
     else if text == ":deepsleep" {
         let _ = feedback_tx.send(CoordinatorMessage::Feedback(
-            FeedbackData::GuiMessagePassthrough(GuiMessage::DeepSleep),
+                FeedbackData::GuiMessagePassthrough(GuiMessage::DeepSleep),
         ));
         return;
     }
@@ -169,8 +176,8 @@ fn hkb_nav_results(
 
     if let Some(target_row_idx) = results.row_at_index(
         results
-            .selected_row()
-            .map_or_else(|| 0, |row| row.index() + cur),
+        .selected_row()
+        .map_or_else(|| 0, |row| row.index() + cur),
     ) {
         results.select_row(Some(&target_row_idx));
         if let Some((_, y)) = target_row_idx.translate_coordinates(&results_window, 0.0, 0.0) {
@@ -185,6 +192,7 @@ fn hkb_nav_results(
             vadj.set_value(new_val.clamp(0.0, vadj.upper() - page));
         }
     }
+    log::warn!("bravo");
 
     gtk4::glib::Propagation::Stop
 }

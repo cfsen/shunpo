@@ -105,6 +105,8 @@ pub fn build_ui(
     results.add_controller(click_sink(search.clone()));
 
     let window_controller = window_controller(
+        results.clone(),
+        results_window.clone(),
         feedback_tx.clone()
     );
     window.add_controller(window_controller);
