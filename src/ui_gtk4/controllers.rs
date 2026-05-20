@@ -192,7 +192,6 @@ fn hkb_nav_results(
             vadj.set_value(new_val.clamp(0.0, vadj.upper() - page));
         }
     }
-    log::warn!("bravo");
 
     gtk4::glib::Propagation::Stop
 }
