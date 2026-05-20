@@ -196,6 +196,7 @@ impl HyprlandState {
 
     fn monitor_score_weight(mname: &MonitorName, config: &Option<ShunpoConfig>) -> i8 {
         let Some(config) = config else {
+            // TODO: notify user via gtk frontend
             error!("Monitor priority not set, defaulting to 0. Check your config file.");
             return 0;
         };
