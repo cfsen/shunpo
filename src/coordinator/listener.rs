@@ -81,6 +81,7 @@ async fn handle_shunpo_socket(
 ) -> Result<(), CoordinatorError> {
     let gui_cmd = match msg {
         ShunpoSocketEventData::ToggleUiMode => GuiMessage::ToggleUiMode,
+        ShunpoSocketEventData::HideUi => GuiMessage::DeepSleep,
     };
 
     gui_tx.send(gui_cmd).await?;

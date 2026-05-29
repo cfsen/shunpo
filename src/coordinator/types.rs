@@ -14,6 +14,7 @@ pub struct HyprlandEventData {
 }
 pub enum ShunpoSocketEventData {
     ToggleUiMode,
+    HideUi,
 }
 pub struct SearchMessageData {
     pub results: Vec<LauncherEntity>,

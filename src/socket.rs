@@ -75,8 +75,7 @@ fn recieve(buf: &[u8], shunpo_tx: &mpsc::UnboundedSender<CoordinatorMessage>) {
                 ShunpoSocketEventData::ToggleUiMode
             ),
             ShunpoSocketOp::Hide => CoordinatorMessage::ShunpoSocketEvent(
-                // TODO: impl send to background layer call
-                ShunpoSocketEventData::ToggleUiMode
+                ShunpoSocketEventData::HideUi
             )
         };
 
