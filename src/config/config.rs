@@ -80,7 +80,7 @@ impl ShunpoConfig {
 impl ShunpoConfig {
     fn collect_monitors() -> Result<Vec<MonitorName>, ConfigError> {
         Ok(get_monitors()
-            .map_err(|_| ConfigError::HyprlandError)?
+            .map_err(|e| ConfigError::HyprlandError(e))?
             .into_iter()
             .map(|m| m.name)
             .collect::<Vec<MonitorName>>())
