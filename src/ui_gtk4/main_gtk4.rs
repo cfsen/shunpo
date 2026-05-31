@@ -96,8 +96,6 @@ fn handle_entry_change(
         return;
     }
 
-    // TODO: check for queries that should inject virtual entities that can dispatch
-
     if let Err(e) = search_tx.send(query) {
         error!("Failed to send search query: {}", e);
     }
