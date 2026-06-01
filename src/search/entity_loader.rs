@@ -77,9 +77,6 @@ pub fn scan_desktop_executables(extra: Vec<PathBuf>) -> Vec<ExecutableEntity> {
         let dispatcher = if entry.terminal() { Dispatcher::Shell }
         else { Dispatcher::Hyprctl };
 
-        // TODO: icons?
-        // let icon = entry.icon();
-
         let path = entry.path;  // TODO: rename field: this is the working directory to run program in
 
         executables.push(ExecutableEntity {
