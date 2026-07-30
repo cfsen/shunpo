@@ -9,7 +9,7 @@ pub fn create_default() -> CustomDispatcher {
             "$path".to_string(),
             "$line".to_string(),
         ],
-        template: "hyprctl dispatch exec \"$term -e $editor -c $line $path\"".to_string(),
+        template: "$term -e $editor -c $line $path".to_string(),
         valid: false,
     };
     rg_dispatcher.validate_template();

@@ -139,10 +139,7 @@ async fn handle_feedback(
 
                             if let Some(call) = rg_dispatcher.compose_dispatch(args) {
                                 info!("ripgrep dispatcher will call: {:?}", call);
-                                let _ = std::process::Command::new("sh")
-                                    .arg("-c")
-                                    .arg(&call)
-                                    .spawn();
+                                let _ = dispatch(call.as_ref());
                             }
                             else {
                                 error!("Failed to compose dispatch for ripgrep.");
